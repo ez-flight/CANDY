@@ -1,14 +1,13 @@
 import os
-from dotenv import (
-    load_dotenv,
-)  # Импортируем библиотеки - для начала оговоренные ранее
-from datetime import datetime, date, timedelta
-import spacetrack.operators as op
-from spacetrack import SpaceTrackClient
-from pyorbital.orbital import Orbital
+from datetime import date, datetime, timedelta
 
 # И pyshp, которая понадобится для создания шейп-файла
 import shapefile
+import spacetrack.operators as op
+from dotenv import \
+    load_dotenv  # Импортируем библиотеки - для начала оговоренные ранее
+from pyorbital.orbital import Orbital
+from spacetrack import SpaceTrackClient
 
 load_dotenv()
 
@@ -80,7 +79,7 @@ def create_orbital_track_shapefile_for_day(
     orb = Orbital("N", line1=tle_1, line2=tle_2)
 
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
-    track_shape = shapefile.Writer(output_shapefile,shapefile.POINT)
+    track_shape = shapefile.Writer(output_shapefile, shapefile.POINT)
 
     # Добавляем поля - идентификатор, время, широту и долготу
     # N - целочисленный тип, C - строка, F - вещественное число
