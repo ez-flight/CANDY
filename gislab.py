@@ -4,8 +4,8 @@ from datetime import date, datetime, timedelta
 # И pyshp, которая понадобится для создания шейп-файла
 import shapefile
 import spacetrack.operators as op
-from dotenv import \
-    load_dotenv  # Импортируем библиотеки - для начала оговоренные ранее
+from dotenv import load_dotenv
+# Импортируем библиотеки - для начала оговоренные ранее
 from pyorbital.orbital import Orbital
 from spacetrack import SpaceTrackClient
 
@@ -95,7 +95,7 @@ def create_orbital_track_shapefile_for_day(
 
     # Простой способ пройти сутки - с заданным в минутах шагом дойти до 1440 минут.
     # Именно столько их в сутках!
-    while minutes < 1440:
+    while minutes < 120:
         # Расчитаем час, минуту, секунду (для текущего шага)
         utc_hour = int(minutes // 60)
         utc_minutes = int((minutes - (utc_hour * 60)) // 1)
@@ -152,5 +152,14 @@ def create_orbital_track_shapefile_for_day(
 
 
 create_orbital_track_shapefile_for_day(
-    25994, date(2016, 12, 15), 5, "/home/ez/space/terra_15_12_2016_5min.shp"
+    37849,
+    date(2016, 12, 15),
+    5,
+    "/home/ez/space/Suomi NPP/Suomi_NPP_15_12_2016_5min.shp",
+)
+create_orbital_track_shapefile_for_day(
+    25994,
+    date(2016, 12, 15),
+    5,
+    "/home/ez/space/terra/terra_15_12_2016_5min.shp",
 )
