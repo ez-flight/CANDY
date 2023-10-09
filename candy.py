@@ -40,17 +40,17 @@ H_p = sat.altp * wgs84.radiusearthkm
 R_z = wgs84.radiusearthkm # 6371.210  # радиус земли
 u = 398600.44158  # геоцентрическая гравитационная постоянная
 e = tle.ecc # вычислим эксестирицент орбиты
-
+Н_0 = H_p
 
 # Вычислим фокальный параметр орбиты
 p = (H_a + R_z) * (1 - e)
 # Вычислим истинную аномалию
-#anom_0 = math.acos((p - R_z - alt) / (e * (R_z + alt)))
+#anom_0 = math.acos((p - R_z - Н_0) / (e * (R_z + Н_0)))
 
 print (f"Эксестирицент орбиты {e:.7f}")
 print (f"Фокальный параметр орбиты {p:.3f}")
 
-#print(tle.ecc)
-print(H_a-alt)
+#print(sat.alta)
+print(anom_0)
 
 print((sat.alta * sat.radiusearthkm), (sat.altp * sat.radiusearthkm))
