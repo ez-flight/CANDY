@@ -29,10 +29,10 @@ class KeplerOrbit:
         self.eccentricity     = e #эксцентриситет орбиты
         self.inclination  = i #наклонение
         self.draco     = d #аргумент перицентра
-        self.omega     = w #долгота восходящего узла 
+        self.omega     = w #долгота восходящего узла
         self.M_0       = m_0  #средняя аномалия
-        
-        
+ 
+   
     def dispEphem(self):
         ''' Вывод на экран эфемерид
         '''
@@ -290,7 +290,7 @@ class KeplerOrbit:
 def _test():
     print('Ку! This is test Kepler.')
 
-    orbit = KeplerOrbit(7000, 0.1, 0.001, 0.001, 0.001, 0.1);
+    orbit = KeplerOrbit(7000, 0.1, 0.001, 0.001, 0.001, 0.1)
 
     print(orbit.get_T())
 
