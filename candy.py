@@ -8,8 +8,8 @@ from tletools import TLE
 
 tle_string = """
 SUOMI NPP
-1 37849U 11061A   23280.08921149  .00000269  00000-0  14837-3 0  9992
-2 37849  98.7111 216.9310 0000832  62.3537 308.8007 14.19576889618819
+1 37849U 11061A   23286.60550963  .00000402  00000-0  21151-3 0  9994
+2 37849  98.7122 223.3420 0000612  86.7596  86.7667 14.19535536619747
 """
 # Нас интересует текущий момент времени
 utc_time = datetime.utcnow()
@@ -33,7 +33,7 @@ lon, lat, alt = get_lat_lon_sgp(tle_1, tle_2, utc_time)
 print (f"Расчеты ведутся для КА {tle.name}")
 print(lon, lat, alt)
 
-sat = Satrec.twoline2rv(tle_lines[1],tle_lines[2])
+sat = Satrec.twoline2rv(tle_1,tle_2)
 
 H_a = sat.alta * wgs84.radiusearthkm
 H_p = sat.altp * wgs84.radiusearthkm
@@ -46,7 +46,7 @@ e = tle.ecc # вычислим эксестирицент орбиты
 p = (H_a + R_z) * (1 - e)
 # Вычислим истинную аномалию
 
-anom_0 = math.acos((p - R_z - Н_0) / (e * (R_z + Н_0)))
+#anom_0 = math.acos((p - R_z - Н_0) / (e * (R_z + Н_0)))
 #print(p - R_z - Н_0)
 #print(e * (R_z + Н_0))
 #print ((p - R_z - Н_0) / (e * (R_z + Н_0)))
@@ -55,6 +55,6 @@ print (f"Эксестирицент орбиты {e:.7f}")
 print (f"Фокальный параметр орбиты {p:.3f}")
 
 #print(sat.alta)
-print(anom_0)
+#print(anom_0)
 
-print((sat.alta * sat.radiusearthkm), (sat.altp * sat.radiusearthkm))
+print(H_a, H_p)

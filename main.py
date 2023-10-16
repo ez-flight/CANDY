@@ -1,18 +1,23 @@
 # Импорт модуля math
 import math
-from datetime import datetime, date
+from datetime import date, datetime
+
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
- 
-tle_1 = '1 37849U 11061A   23279.05498059  .00000257  00000-0  14269-3 0  9992'
-tle_2 = '2 37849  98.7110 215.9136 0000851  62.3990  66.3207 14.19576225618662'
-# Нас интересует текущий момент времени
-utc_time = datetime.utcnow()
+from sgp4.api import Satrec
+from sgp4.earth_gravity import wgs84
 
-H_a=305000 # высота апогея
-H_p=293000 # высота перегея
-H_0=293000 # высота начала съемки
-R_z=6371.210 # радиус земли
+from read_TBF import read_tle_base_file, read_tle_base_internet
+
+#s_name, tle_1, tle_2 = read_tle_base_file(37849)
+s_name, tle_1, tle_2 = read_tle_base_internet(37849)
+utc_time = datetime.utcnow()
+sat = Satrec.twoline2rv(tle_1,tle_2)
+
+R_z=wgs84.radiusearthkm # радиус земли
+H_a=sat.alta * R_z # высота апогея
+H_p=sat.altp * R_z # высота перегея
+
 u=398600.44158 #геоцентрическая гравитационная постоянная
 
 # Ещё одна простая функция, для демонстрации принципа.
@@ -22,24 +27,32 @@ def get_lat_lon_sgp (tle_1, tle_2, utc_time):
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
     lon, lat, alt = orb.get_lonlatalt(utc_time)
-    print (orb.get_position(utc_time))
     return lon, lat, alt
 
 # Обращаемся к фукнции и выводим результат
 lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, utc_time)
-print (lon, lat, alt)
+
+H_0 = alt # высота начала съемки
 
 # вычислим эксестирицент орбиты
-e=(H_a-H_p)/(H_a+H_p+2*R_z)
+#e=(H_a-H_p)/(H_a+H_p+2*R_z)
+e = sat.ecco
 # Вычислим фокальный параметр орбиты
 p=(H_a+R_z)*(1-e)
 # Вычислим истинную аномалию
-anom_0=math.acos((p-R_z-H_0)/(e*(R_z+H_0)))
+if H_0 < H_p or H_0 > H_a:
+    print(f"Бро херня какая то разница между высотой и апогеем ИСЗ {(H_0-H_a):.2f}")
+    anom_0 = 0 
+else:
+    anom_0 = math.acos((p-R_z-H_0)/(e*(R_z+H_0)))
 
-#print ("Расчеты ведутся для Suomi NPP")
-#print (f"Эксестирицент орбиты {e:.3f}")
-#print (f"Фокальный параметр орбиты {p:.3f}")
-#print (f"Истинная аномалия {anom_0}")
+print (f"Расчеты ведутся для {s_name}")
+print (f"Эксестирицент орбиты {e}")
+print (f"Фокальный параметр орбиты {p:.3f}")
+print(f"Apogee:  {H_a}")
+print(f"Perigee: {H_p}")
+print(f"Высота начала съемки: {H_0}")
+print (f"Истинная аномалия {anom_0}")
 
 # Вычислим длительность наблюдения t_s
 #t_s= 

@@ -1,9 +1,11 @@
+import math
+
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
 from tletools import TLE
+
 from KeplerOrbit import KeplerOrbit
-import math
 
 tle_string = """
 SUOMI NPP
@@ -50,3 +52,11 @@ orbit.xyz2ephem(x, y, z, x1, y1, z1)
 orbit.dispEphem()
 orbit.dispXYZ(0)
 orbit.dispXYZ1(0)
+
+from sgp4.api import Satrec
+
+line=['0 ISS (ZARYA)',
+'1 25544U 98067A   21356.62544795  .00006800  00000-0  13125-3 0  9998',
+'2 25544  51.6428 130.9420 0004657 342.5227  11.5462 15.49048823317794']
+sat = Satrec.twoline2rv(line[1],line[2])
+print((sat.alta * sat.radiusearthkm), (sat.altp * sat.radiusearthkm))

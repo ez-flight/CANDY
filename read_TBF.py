@@ -1,14 +1,14 @@
+#!/usr/bin/env python3
 import os
-# Импортируем библиотеки
-# Штатная библиотека для работы со временем
-from datetime import date, datetime
+from datetime import datetime
 
-# Собственно клиент для space-track
-# Набор операторов для управления запросами. Отсюда нам понадобится время
 import spacetrack.operators as op
 from dotenv import load_dotenv
+from sgp4.api import Satrec
 # Главный класс для работы с space-track
 from spacetrack import SpaceTrackClient
+
+# Имя пользователя и пароль сейчас опишем как константы
 
 load_dotenv()
 
@@ -16,13 +16,13 @@ load_dotenv()
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
+utc_time = datetime.utcnow()
 
-# Для примера реализуем всё в виде одной простой функции
-# На вход она потребует идентификатор спутника, диапазон дат, имя пользователя и пароль. Опциональный флаг для последних данных tle
+
 def get_spacetrack_tle(
     sat_id, start_date, end_date, username, password, latest=False
 ):
-    # Реализуем экземпляр класса SpaceTrackClient, инициализируя его именем пользователя и паролем
+    # Реализуем экземпляр класса SpaceTrackClient
     st = SpaceTrackClient(identity=username, password=password)
     # Выполнение запроса для диапазона дат:
     if not latest:
@@ -53,6 +53,32 @@ def get_spacetrack_tle(
     return tle_1, tle_2
 
 
-tle_1, tle_2 = get_spacetrack_tle(37849, None, None, USERNAME, PASSWORD, True)
-print(tle_1)
-print(tle_2)
+def read_tle_base_file(norad_number):
+    with open("active.txt", "r") as fp:
+        lines = fp.readlines()
+
+    sats = []
+
+    for i in range(len(lines) - 1):
+        if (lines[i][0] == "1") and (lines[i+1][0] == "2"):
+            sats.append(lines[i-1] + lines[i] + lines[i+1])
+
+    for j in range(len(sats)):
+        tle_string = sats[j]
+        s_name, tle_1, tle_2 = tle_string.strip().splitlines()
+        sat = Satrec.twoline2rv(tle_1, tle_2)
+        if sat.satnum == norad_number:
+            return s_name, tle_1, tle_2
+
+def read_tle_base_internet(norad_number):
+    tle_i_1, tle_i_2 = get_spacetrack_tle(norad_number, None, None, USERNAME, PASSWORD, True)
+    s_name_f, tle_f_1, tle_f_2 = read_tle_base_file(norad_number)
+    return s_name_f, tle_i_1, tle_i_2
+
+def _test():
+    print(read_tle_base_file(25544))
+    print(read_tle_base_internet(25544))
+
+
+if __name__ == "__main__":
+    _test()
