@@ -9,8 +9,8 @@ from sgp4.earth_gravity import wgs84
 
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
-s_name, tle_1, tle_2 = read_tle_base_file(25544)
-#s_name, tle_1, tle_2 = read_tle_base_internet(25544)
+#s_name, tle_1, tle_2 = read_tle_base_file(25544)
+s_name, tle_1, tle_2 = read_tle_base_internet(25544)
 utc_time = datetime.utcnow()
 sat = Satrec.twoline2rv(tle_1,tle_2)
 
