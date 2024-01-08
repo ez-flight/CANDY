@@ -15,7 +15,7 @@ utc_time = datetime.utcnow()
 sat = Satrec.twoline2rv(tle_1,tle_2)
 
 R_z=wgs84.radiusearthkm # радиус земли
-H_a=sat.alta * R_z # высота апогея
+H_a=505#sat.alta * R_z # высота апогея
 H_p=sat.altp * R_z # высота перегея
 
 u=398600.44158 #геоцентрическая гравитационная постоянная
@@ -46,9 +46,12 @@ p=(H_a+R_z)*(1-e)
 # Вычислим истинную аномалию
 if alt < H_p or alt > H_a:
     print(f"Бро херня какая то разница между высотой и апогеем ИСЗ {(alt-H_a):.2f}")
-    anom_0 = 0 
-else:
-    anom_0 = math.acos((p-R_z-alt)/(e*(R_z+alt)))
+for i in range(len(H_0)):
+ #   anom_0 = math.acos((p-R_z-H_0[i])/(e*(R_z+H_0[i])))
+    print ((p-R_z-H_0[i])/(e*(R_z+H_0[i])))
+#     print(type((p-R_z-H_0[i])))
+#     print(type(e*(R_z+H_0[i])))
+
 
 print (f"Расчеты ведутся для {s_name}")
 print (f"Эксестирицент орбиты {e}")
@@ -56,7 +59,7 @@ print (f"Фокальный параметр орбиты {p:.3f}")
 print(f"Apogee:  {H_a}")
 print(f"Perigee: {H_p}")
 print(f"Высота начала съемки: {alt}")
-print (f"Истинная аномалия {anom_0}")
+#print (f"Истинная аномалия {anom_0}")
 
 
 # Вычислим длительность наблюдения t_s
