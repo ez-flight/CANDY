@@ -62,7 +62,7 @@ def central_angle_0(H_null,C_0,R_erth):
 def central_angle_2(H_null,H_ap,H_per,C_0,R_erth):
     e=(H_ap-H_per)/(H_ap+H_per+2*R_erth)
     p=(H_ap+R_erth)*(1-e)
-    c_a_2= math.acos(p**2+(C_0+1)*)
+ #   c_a_2= math.acos(p**2+(C_0+1)*)
 
 print (central_angle_0(H_0[1],0.4,R_z))
 #for i in range(len(H_0)):
