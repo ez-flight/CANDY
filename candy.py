@@ -27,7 +27,7 @@ delta = timedelta(
 )
 
 dt_start = datetime.now()
-dt_end = datetime(2024,1,30,10,50,1)
+dt_end = datetime(2024,1,20,10,50,1)
 dt = dt_start
 
 
@@ -73,11 +73,15 @@ X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 #res2 = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
 while dt<dt_end:
-    if dt.date() == datetime(2024, 9, 7).date():
-        dt += delta
-        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, dt)
-        R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
-        if R_n < R_z:
-            print(R_n)
-print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
+    X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, dt)
+    R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+    R_n = R_n/1000 
+    if R_n > R_z:
+        print(R_n)
+    else:
+        print("Ха Ха")
+    dt += delta
+
+print(R_z)
+#print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
 #print (res1, res2)

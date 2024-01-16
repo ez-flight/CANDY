@@ -15,9 +15,7 @@ dt_end = datetime(2024,1,30,10,50,1)
 dt = dt_start
 
 while dt<dt_end:
-
-    if dt.date() == datetime(2024, 9, 7).date():
-        print(dt) #твоё условие
-    dt += delta
     print(dt) #твоё условие
+    dt += delta
+
     
