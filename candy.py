@@ -9,7 +9,6 @@ from sgp4.earth_gravity import wgs84
 
 from read_TBF import read_tle_base_file, read_tle_base_internet
 from cal_cord import geodetic_to_geocentric
-
 #s_name, tle_1, tle_2 = read_tle_base_file(37849)
 s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 utc_time = datetime.utcnow()
@@ -36,12 +35,29 @@ def get_position (tle_1, tle_2, utc_time):
     # Инициализируем экземпляр класса Orbital двумя строками TLE
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
-    one, two = orb.get_position(utc_time,False)
-    return one, two
+    R_s, V_s = orb.get_position(utc_time,False)
+    X_s, Y_s, Z_s = R_s
+    Vx_s, Vy_s, Vz_s = V_s
+    return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
+lat = -59.95
+lon = -149.683333
+h = 12
+
+X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 # Обращаемся к фукнции и выводим результат
 #lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, utc_time)
-one,two =get_position (tle_1, tle_2, utc_time)
-res1 = math.sqrt((one[0]**2)+(one[1]**2)+(one[2]**2))
-res2 = math.sqrt((two[0]**2)+(two[1]**2)+(two[2]**2))
-print (res1,res2)
+X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, utc_time)
+
+R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+
+#res1 = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
+#res2 = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
+
+
+if R_z > R_n:
+    print(R_n)
+else:
+    print("Наклонная дальность больше радиуса земли!")    
+#print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
+#print (res1, res2)
