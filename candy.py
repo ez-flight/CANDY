@@ -74,9 +74,10 @@ X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 
 while dt<dt_end:
     if dt.date() == datetime(2024, 9, 7).date():
+        dt += delta
         X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, dt)
         R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
-        print(R_n)
-    dt += delta
-#print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
+        if R_n < R_z:
+            print(R_n)
+print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
 #print (res1, res2)
