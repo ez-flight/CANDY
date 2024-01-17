@@ -76,9 +76,14 @@ X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 
 while dt<dt_end:
     X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
-    R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))/1000
-    if R_n <  R_z:
-        print(f"{R_z-R_n} Наклонная Дальность равна {R_n} в {dt}")
+    X = (X_s-X_t)
+    Y = (Y_s-Y_t)
+    Z = (Z_s-Z_t)
+    print(f"X={X}, Y={Y}, Z={Z}")
+    R_n = math.sqrt((X**2)+(Y**2)+(Z**2))/1000
+    print(f"{R_z-R_n} Наклонная Дальность равна {R_n:2f} в {dt}")
+#    if R_n <  R_z:
+#        print(f"{R_z-R_n} Наклонная Дальность равна {R_n} в {dt}")
     dt += delta
 
 print(R_z)

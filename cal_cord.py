@@ -20,20 +20,11 @@ def geodetic_to_geocentric(lat, lon, h):
 
     return X, Y, Z
 
-def fromLatLong(lat, lon, h, a, f):
-    b, c, e2, e12 = initSpher(a, f)
-    cos_lat = math.cos(lat)
-    n = c / math.sqrt(1. + e12 * cos_lat ** 2)
-    p = (n + h) * cos_lat
-    x = p * math.cos(lon)
-    y = p * math.sin(lon)
-    z = (n + h - e2 * n) * math.sin(lat)
-    return (x, y, z)
 
 
 def _test():
-    lat = -59.95
-    lon = -149.683333
+    lat = 59.95
+    lon = 30.316667
     h = 12
     print(geodetic_to_geocentric(lat, lon, h))
 
