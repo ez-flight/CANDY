@@ -10,8 +10,9 @@ from sgp4.earth_gravity import wgs84
 from cal_cord import geodetic_to_geocentric
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
-#s_name, tle_1, tle_2 = read_tle_base_file(37849)
-s_name, tle_1, tle_2 = read_tle_base_internet(37849)
+#25544 37849
+s_name, tle_1, tle_2 = read_tle_base_file(37849)
+#s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 utc_time = datetime.utcnow()
 sat = Satrec.twoline2rv(tle_1,tle_2)
 
@@ -27,12 +28,13 @@ delta = timedelta(
 )
 
 dt_start = datetime.now()
-dt_end = datetime(2024,1,20,10,50,1)
+dt_end = datetime(2024,2,20,10,50,1)
 dt = dt_start
 
 
 
 R_z=wgs84.radiusearthkm # радиус земли
+R_z= 6378.137
 #H_a=505#sat.alta * R_z # высота апогея
 #H_p=sat.altp * R_z # высота перегея
 
@@ -58,8 +60,8 @@ def get_position (tle_1, tle_2, utc_time):
     Vx_s, Vy_s, Vz_s = V_s
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
-lat = -59.95
-lon = -149.683333
+lat = 59.95
+lon = 30.316667
 h = 12
 
 X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
@@ -73,13 +75,10 @@ X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 #res2 = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
 while dt<dt_end:
-    X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, dt)
-    R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
-    R_n = R_n/1000 
-    if R_n > R_z:
-        print(R_n)
-    else:
-        print("Ха Ха")
+    X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+    R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))/1000
+    if R_n <  R_z:
+        print(f"{R_z-R_n} Наклонная Дальность равна {R_n} в {dt}")
     dt += delta
 
 print(R_z)
