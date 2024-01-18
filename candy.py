@@ -29,7 +29,7 @@ delta = timedelta(
 )
 
 dt_start = datetime.now()
-dt_end = datetime(2024,2,20,10,50,1)
+dt_end = datetime(2024,1,30,10,50,1)
 dt = dt_start
 
 
@@ -88,7 +88,7 @@ while dt<dt_end:
 #        print(R_n)
  #       print(f"Наклонная Дальность равна {R_n} в {dt}")
         f = math.acos(((R_n**2)+(R_s**2)-(R_z**2))/(2*R_n*R_s))
-        print(f)
+        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f}")
 #    else:
 #        print("!")
     dt += delta
