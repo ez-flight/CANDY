@@ -7,15 +7,16 @@ from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
 
-from cal_cord import geodetic_to_geocentric
+from cal_cord import geodetic_to_geocentric, fromLatLong
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
-s_name, tle_1, tle_2 = read_tle_base_file(37849)
-#s_name, tle_1, tle_2 = read_tle_base_internet(37849)
+#s_name, tle_1, tle_2 = read_tle_base_file(25544)
+s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 utc_time = datetime.utcnow()
 sat = Satrec.twoline2rv(tle_1,tle_2)
 
+wgs_84 = (6378137., 1./298.257223563)
 
 delta = timedelta(
     days=0,
@@ -34,7 +35,7 @@ dt = dt_start
 
 
 R_z=wgs84.radiusearthkm # радиус земли
-R_z= 6378.137
+#R_z= 6378.137
 #H_a=505#sat.alta * R_z # высота апогея
 #H_p=sat.altp * R_z # высота перегея
 
@@ -47,8 +48,6 @@ def get_lat_lon_sgp (tle_1, tle_2, utc_time):
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
     lon, lat, alt = orb.get_lonlatalt(utc_time)
-    one, two = orb.get_position(utc_time,False)
-    print (one[1])
     return lon, lat, alt
 
 def get_position (tle_1, tle_2, utc_time):
@@ -64,7 +63,8 @@ lat = 59.95
 lon = 30.316667
 h = 12
 
-X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
+#X_t, Y_t, Z_t = geodetic_to_geocentric(lat, lon, h, af)
+X_t, Y_t, Z_t = fromLatLong(lat, lon, h, wgs_84)
 # Обращаемся к фукнции и выводим результат
 #lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, utc_time)
 #X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, utc_time)
@@ -76,16 +76,23 @@ X_t, Y_t, Z_t = geodetic_to_geocentric( lat, lon, h)
 
 while dt<dt_end:
     X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+    R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2)) 
     X = (X_s-X_t)
     Y = (Y_s-Y_t)
     Z = (Z_s-Z_t)
-    print(f"X={X}, Y={Y}, Z={Z}")
-    R_n = math.sqrt((X**2)+(Y**2)+(Z**2))/1000
-    print(f"{R_z-R_n} Наклонная Дальность равна {R_n:2f} в {dt}")
-#    if R_n <  R_z:
-#        print(f"{R_z-R_n} Наклонная Дальность равна {R_n} в {dt}")
+ #   print(f"X={X}, Y={Y}, Z={Z}")
+#    print(f"X_s={X_s}, X_t={X_t}")
+    R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
+  #  print(f"Наклонная Дальность равна {R_n} в {dt}")
+    if R_n < R_z:
+#        print(R_n)
+ #       print(f"Наклонная Дальность равна {R_n} в {dt}")
+        f = math.acos(((R_n**2)+(R_s**2)-(R_z**2))/(2*R_n*R_s))
+        print(f)
+#    else:
+#        print("!")
     dt += delta
 
-print(R_z)
+#print(R_z)
 #print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
 #print (res1, res2)
