@@ -1,6 +1,7 @@
 # Импорт модуля math
 import math
 from datetime import date, datetime, timedelta
+from J2000 import position_GCRS_J2000 
 
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
@@ -55,6 +56,7 @@ def get_position (tle_1, tle_2, utc_time):
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
     R_s, V_s = orb.get_position(utc_time,False)
+    print(position_GCRS_J2000(utc_time,R_s))
     X_s, Y_s, Z_s = R_s
     Vx_s, Vy_s, Vz_s = V_s
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
@@ -76,6 +78,7 @@ X_t, Y_t, Z_t = fromLatLong(lat, lon, h, wgs_84)
 
 while dt<dt_end:
     X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+
     R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2)) 
     X = (X_s-X_t)
     Y = (Y_s-Y_t)

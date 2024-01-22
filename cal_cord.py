@@ -1,4 +1,5 @@
 import math
+from J2000 import position_GCRS_J2000 
 
 ## Ellipsoid Parameters as tuples (semi major axis, inverse flattening)
 grs80 = (6378137, 298.257222100882711)
