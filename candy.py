@@ -94,5 +94,5 @@ while dt<dt_end:
     dt += delta
 
 #print(R_z)
-#print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
+print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
 #print (res1, res2)
