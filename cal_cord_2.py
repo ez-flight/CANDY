@@ -6,7 +6,7 @@ from datetime import date, datetime, timedelta
 
 pi =3.14
 
-def days(utc_time):
+def dayss(utc_time):
     year = utc_time.year
     month = utc_time.month
     day = utc_time.day
@@ -18,9 +18,38 @@ def days(utc_time):
     d = dwhole+dfrac
     return d
 
+def days(utc_time):
+    year = utc_time.year
+    month = utc_time.month
+    day = utc_time.day
+    hour = utc_time.hour
+    minute = utc_time.minute
+    second = utc_time.second
+    if month < 3:
+        year = year -1
+        month = month + 12
+    b = -2 + int((year+4716)/4)-1179
+    d = (hour + (minute/60)+ (second/3600.0))/24.0
+    MJD = (365*year)- 679004 + b + int(30.6001*(month+1))+ day + d
+    return MJD
+
+def gmst(utc_time):
+    PI2 = math.pi * 2    # => 6.283185307179586
+    D2R = math.pi / 180  # => 0.017453292519943295
+    jd_ut1 = days(utc_time)
+    t_ut1= (jd_ut1 - 2451545.0) / 36525
+    gmst =  67310.54841 \
+        + (876600.0 * 3600.0 + 8640184.812866 \
+        + (0.093104 \
+        -  6.2e-6 * t_ut1) * t_ut1) * t_ut1
+    gmst = (gmst * D2R / 240.0) % PI2
+    if gmst < 0.0:
+        gmst += PI2
+    return gmst
+
+
 def GMST(utc_time): #гринвичское звёздное время
     d = days(utc_time)
-    print (d)
     GMST = 280.46061837+360.98564736629*d
     GMST = GMST-360*int(GMST/360)
     if GMST<0:
@@ -30,9 +59,10 @@ def GMST(utc_time): #гринвичское звёздное время
 
 def ISKtoGSK(utc_time, x,y,z): # Перевод из инерциальной системы в Гринвеческую
     alfa = GMST(utc_time)*pi/180.0
-    print (f"Угол ={alfa} в время {utc_time}")
-    cz = math.cos(alfa) #alfa - гринвичское звёздное время в радианах
-    sz = math.sin(alfa)
+    alfa_2 = gmst(utc_time)
+    print (f"Угол ={alfa} {alfa_2} в время {utc_time}")
+    cz = math.cos(alfa_2) #alfa - гринвичское звёздное время в радианах
+    sz = math.sin(alfa_2)
 
     Rz = ([
     [cz,sz,0],
@@ -46,10 +76,11 @@ def ISKtoGSK(utc_time, x,y,z): # Перевод из инерциальной с
 
 def GSKtoISK(utc_time, x,y,z): # Перевод из Гринвеческой СК в инерциальную СК
     alfa = GMST(utc_time)*pi/180.0 #alfa - гринвичское звёздное время в радианах
-    print (f"Угол ={alfa} в время {utc_time}")
+#    print (f"Угол ={alfa} в время {utc_time}")
 
-    cz = math.cos(alfa) 
-    sz = math.sin(alfa)
+    alfa_2 = gmst(utc_time)
+    cz = math.cos(alfa_2) 
+    sz = math.sin(alfa_2)
 
     Rz = ([
     [cz,sz,0],
@@ -65,10 +96,10 @@ def GSKtoISK(utc_time, x,y,z): # Перевод из Гринвеческой С
 
 def _test():
 
-    delta = timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=1, weeks=0)
+    delta = timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=1, hours=0, weeks=0)
     dt_start = datetime.now()
     dt_end = dt_start + timedelta(
-        days=2,
+        days=1,
         seconds=0,
         microseconds=0,
         milliseconds=0,

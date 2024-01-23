@@ -26,7 +26,7 @@ dt_start = datetime.now() + timedelta(
         microseconds=0,
         milliseconds=0,
         minutes=0,
-        hours=7,
+        hours=0,
         weeks=0
     ) #Задаем шаг определения координат
 
@@ -85,12 +85,12 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
     ) #Задаем шаг определения координат
 
     dt_end = dt_start + timedelta(
-        days=0,
+        days=3,
         seconds=0,
         microseconds=0,
         milliseconds=0,
         minutes=0,
-        hours=3,
+        hours=0,
         weeks=0
     )
     dt = dt_start
@@ -136,15 +136,14 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
         # Считаем положение спутника
         lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, dt)
 #        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
-
-         # Создаём в шейп-файле новый объект
-         # Определеяем геометрию
-        track_shape.point(lon, lat)
-         # и атрибуты
-        track_shape.record(i, dt, lon, lat, R_s, R_t, R_n, f_grad)
-
-         # Не забываем про счётчики
-        i += 1
+        if R_n < 1000:
+            # Создаём в шейп-файле новый объект
+            # Определеяем геометрию
+            track_shape.point(lon, lat)
+            # и атрибуты
+            track_shape.record(i, dt, lon, lat, R_s, R_t, R_n, f_grad)
+            # Не забываем про счётчики
+            i += 1
             
         dt += delta
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
