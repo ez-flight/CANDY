@@ -10,6 +10,7 @@ from pyorbital.orbital import Orbital
 from spacetrack import SpaceTrackClient
 
 load_dotenv()
+utc_time = datetime.utcnow()
 
 # Имя пользователя и пароль сейчас опишем как константы
 USERNAME = os.getenv("USERNAME")
@@ -153,9 +154,9 @@ def create_orbital_track_shapefile_for_day(
 
 create_orbital_track_shapefile_for_day(
     37849,
-    date(2016, 12, 15),
+    date(utc_time.year, utc_time.month, utc_time.day),
     5,
-    "/home/ez/space/Suomi NPP/Suomi_NPP_15_12_2016_5min.shp",
+    "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp",
 )
 create_orbital_track_shapefile_for_day(
     25994,

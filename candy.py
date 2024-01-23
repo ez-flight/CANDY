@@ -1,7 +1,8 @@
 # Импорт модуля math
 import math
 from datetime import date, datetime, timedelta
-from J2000 import position_GCRS_J2000 
+from cal_cord_2 import GSKtoISK
+import shapefile
 
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
@@ -12,27 +13,22 @@ from cal_cord import geodetic_to_geocentric, fromLatLong
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
-#s_name, tle_1, tle_2 = read_tle_base_file(25544)
+#s_name, tle_1, tle_2 = read_tle_base_file(37849)
 s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 utc_time = datetime.utcnow()
 sat = Satrec.twoline2rv(tle_1,tle_2)
 
 wgs_84 = (6378137., 1./298.257223563)
 
-delta = timedelta(
-    days=0,
-    seconds=0,
-    microseconds=0,
-    milliseconds=0,
-    minutes=10,
-    hours=0,
-    weeks=0
-)
-
-dt_start = datetime.now()
-dt_end = datetime(2024,1,30,10,50,1)
-dt = dt_start
-
+dt_start = datetime.now() + timedelta(
+        days=0,
+        seconds=0,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=7,
+        weeks=0
+    ) #Задаем шаг определения координат
 
 
 R_z=wgs84.radiusearthkm # радиус земли
@@ -56,17 +52,14 @@ def get_position (tle_1, tle_2, utc_time):
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
     R_s, V_s = orb.get_position(utc_time,False)
-    print(position_GCRS_J2000(utc_time,R_s))
     X_s, Y_s, Z_s = R_s
     Vx_s, Vy_s, Vz_s = V_s
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
-lat = 59.95
-lon = 30.316667
-h = 12
+
 
 #X_t, Y_t, Z_t = geodetic_to_geocentric(lat, lon, h, af)
-X_t, Y_t, Z_t = fromLatLong(lat, lon, h, wgs_84)
+
 # Обращаемся к фукнции и выводим результат
 #lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, utc_time)
 #X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s =get_position (tle_1, tle_2, utc_time)
@@ -76,26 +69,102 @@ X_t, Y_t, Z_t = fromLatLong(lat, lon, h, wgs_84)
 #res1 = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
 #res2 = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
-while dt<dt_end:
-    X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes, output_shapefile):
 
-    R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2)) 
-    X = (X_s-X_t)
-    Y = (Y_s-Y_t)
-    Z = (Z_s-Z_t)
- #   print(f"X={X}, Y={Y}, Z={Z}")
-#    print(f"X_s={X_s}, X_t={X_t}")
-    R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
-  #  print(f"Наклонная Дальность равна {R_n} в {dt}")
-    if R_n < R_z:
-#        print(R_n)
- #       print(f"Наклонная Дальность равна {R_n} в {dt}")
-        f = math.acos(((R_n**2)+(R_s**2)-(R_z**2))/(2*R_n*R_s))
-        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f}")
-#    else:
-#        print("!")
-    dt += delta
+    lat_t = 59.95
+    lon_t = 30.316667
+    h_t = 12
+    delta = timedelta(
+        days=0,
+        seconds=0,
+        microseconds=0,
+        milliseconds=0,
+        minutes=step_minutes,
+        hours=0,
+        weeks=0
+    ) #Задаем шаг определения координат
 
-#print(R_z)
-print (X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s)
-#print (res1, res2)
+    dt_end = dt_start + timedelta(
+        days=0,
+        seconds=0,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=3,
+        weeks=0
+    )
+    dt = dt_start
+
+
+    # Создаём экземляр класса Orbital
+    orb = Orbital("N", line1=tle_1, line2=tle_2)
+
+    # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
+    track_shape = shapefile.Writer(output_shapefile, shapefile.POINT)
+
+    # Добавляем поля - идентификатор, время, широту и долготу
+    # N - целочисленный тип, C - строка, F - вещественное число
+    # Для времени придётся использовать строку, т.к. нет поддержки формата "дата и время"
+    track_shape.field("ID", "N", 40)
+    track_shape.field("TIME", "C", 40)
+    track_shape.field("LON", "F", 40)
+    track_shape.field("LAT", "F", 40)
+    track_shape.field("R_s", "F", 40)
+    track_shape.field("R_t", "F", 40)
+    track_shape.field("R_n", "F", 40)
+    track_shape.field("Ф", "F", 40)
+
+    # Объявляем счётчики, i для идентификаторов, minutes для времени
+    i = 0
+    minutes = 0
+
+    # Простой способ пройти сутки - с заданным в минутах шагом дойти до 1440 минут.
+    # Именно столько их в сутках!
+    while dt<dt_end:
+        # Расчет инерциальных пара
+        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+        X_gsk, Y_gsk, Z_gsk = fromLatLong(lat_t, lon_t, h_t, wgs_84)
+        X_t, Y_t, Z_t = GSKtoISK(dt, X_gsk, Y_gsk, Z_gsk)
+        R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
+        X = (X_s-X_t)
+        Y = (Y_s-Y_t)
+        Z = (Z_s-Z_t)
+        R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
+        R_t = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
+        f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
+        f_grad = f_rad*(180/3.14)
+        # Считаем положение спутника
+        lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, dt)
+#        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
+
+         # Создаём в шейп-файле новый объект
+         # Определеяем геометрию
+        track_shape.point(lon, lat)
+         # и атрибуты
+        track_shape.record(i, dt, lon, lat, R_s, R_t, R_n, f_grad)
+
+         # Не забываем про счётчики
+        i += 1
+            
+        dt += delta
+    # Вне цикла нам осталось записать созданный шейп-файл на диск.
+    # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
+    # можно заодно создать файл .prj с нужным описанием
+
+    try:
+        # Создаем файл .prj с тем же именем, что и выходной .shp
+        prj = open("%s.prj" % output_shapefile.replace(".shp", ""), "w")
+        # Создаем переменную с описанием EPSG:4326 (WGS84)
+        wgs84_wkt = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]'
+        # Записываем её в файл .prj
+        prj.write(wgs84_wkt)
+        # И закрываем его
+        prj.close()
+        # Функцией save также сохраняем и сам шейп.
+        track_shape.save(output_shapefile)
+    except:
+        # Вдруг нет прав на запись или вроде того...
+        print("Unable to save shapefile")
+        return
+    
+create_orbital_track_shapefile_for_day(tle_1,tle_2, dt_start, 2, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")

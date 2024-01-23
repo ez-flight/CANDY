@@ -3,6 +3,8 @@ import os
 # Штатная библиотека для работы со временем
 from datetime import date, datetime
 
+from datetime import date, datetime, timedelta
+
 # Собственно клиент для space-track
 # Набор операторов для управления запросами. Отсюда нам понадобится время
 import spacetrack.operators as op
