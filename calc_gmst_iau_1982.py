@@ -11,9 +11,6 @@ Copyright(C) 2018 mk-mode.com All Rights Reserved.
            無指定なら現在(システム日時)を UT1 とみなす。
 """
 import math
-import re
-import sys
-import traceback
 from datetime import datetime
 
 
