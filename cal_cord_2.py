@@ -1,9 +1,11 @@
 import math
-import numpy
-from sgp4.earth_gravity import wgs84
 from datetime import date, datetime, timedelta
 
+import numpy
 from pyorbital.orbital import astronomy
+from sgp4.earth_gravity import wgs84
+
+from calc_gmst_iau_1982 import calc_gmst
 
 pi =3.14
 
@@ -77,7 +79,7 @@ def ISKtoGSK(utc_time, x,y,z): # Перевод из инерциальной с
 
 def GSKtoISK(utc_time, x,y,z): # Перевод из Гринвеческой СК в инерциальную СК
     alfa = astronomy.gmst(utc_time)
-    print (f"Угол ={alfa}  в время {utc_time}")
+#    print (f"Угол ={alfa}  в время {utc_time}")
     cz = math.cos(alfa) #alfa - гринвичское звёздное время в радианах
     sz = math.sin(alfa)
 
@@ -117,6 +119,8 @@ def _test():
             print(f"2 -> {gmsts(dt)} на {dt}")
         if GMST(dt) < 0.0001:
             print(f"3 -> {GMST(dt)} на {dt}")
+        if calc_gmst(dt) < 0.0001:
+            print(f"4 -> {calc_gmst(dt)} на {dt}")       
 #        print (p)
 #        print (p_0)
         dt += delta

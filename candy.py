@@ -1,15 +1,15 @@
 # Импорт модуля math
 import math
 from datetime import date, datetime, timedelta
-from cal_cord_2 import GSKtoISK
-import shapefile
 
+import shapefile
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
 
-from cal_cord import geodetic_to_geocentric, fromLatLong
+from cal_cord import fromLatLong, geodetic_to_geocentric
+from cal_cord_2 import GSKtoISK
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
@@ -38,20 +38,22 @@ R_z=wgs84.radiusearthkm # радиус земли
 
 u=398600.44158 #геоцентрическая гравитационная постоянная
 
+
 # Ещё одна простая функция, для демонстрации принципа.
 # На вход она потребует две строки tle и время utc в формате datetime.datetime
-def get_lat_lon_sgp (tle_1, tle_2, utc_time):
+def get_lat_lon_sgp(tle_1, tle_2, utc_time):
     # Инициализируем экземпляр класса Orbital двумя строками TLE
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
     lon, lat, alt = orb.get_lonlatalt(utc_time)
     return lon, lat, alt
 
-def get_position (tle_1, tle_2, utc_time):
+
+def get_position(tle_1, tle_2, utc_time):
     # Инициализируем экземпляр класса Orbital двумя строками TLE
     orb = Orbital("N", line1=tle_1, line2=tle_2)
     # Вычисляем географические координаты функцией get_lonlatalt, её аргумент - время в UTC.
-    R_s, V_s = orb.get_position(utc_time,False)
+    R_s, V_s = orb.get_position(utc_time, False)
     X_s, Y_s, Z_s = R_s
     Vx_s, Vy_s, Vz_s = V_s
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
@@ -71,8 +73,8 @@ def get_position (tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes, output_shapefile):
 
-    lat_t = 59.95
-    lon_t = 30.316667
+    lat_t = 51.477811 #,59.95
+    lon_t = 0.0 #30.316667
     h_t = 12
     delta = timedelta(
         days=0,
@@ -116,14 +118,15 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
-    minutes = 0
 
     # Простой способ пройти сутки - с заданным в минутах шагом дойти до 1440 минут.
     # Именно столько их в сутках!
-    while dt<dt_end:
+    X_gsk, Y_gsk, Z_gsk = fromLatLong(lat_t, lon_t, h_t, wgs_84)
+#    X_gsk, Y_gsk, Z_gsk = 2759.479107, 4769.940151, 3200.732225
+    print (fromLatLong(lat_t, lon_t, h_t, wgs_84))
+    while dt < dt_end:
         # Расчет инерциальных пара
-        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
-        X_gsk, Y_gsk, Z_gsk = fromLatLong(lat_t, lon_t, h_t, wgs_84)
+        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
         X_t, Y_t, Z_t = GSKtoISK(dt, X_gsk, Y_gsk, Z_gsk)
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
         X = (X_s-X_t)
@@ -134,7 +137,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
         f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
         f_grad = f_rad*(180/3.14)
         # Считаем положение спутника
-        lon, lat, alt = get_lat_lon_sgp (tle_1, tle_2, dt)
+        lon, lat, alt = get_lat_lon_sgp(tle_1, tle_2, dt)
 #        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
         if R_n < 1000:
             # Создаём в шейп-файле новый объект
