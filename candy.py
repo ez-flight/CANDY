@@ -8,7 +8,7 @@ from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
 
-from cal_cord import geodetic_to_ISK, geodetic_to_geocentric
+from cal_cord import geodetic_to_geocentric, geodetic_to_ISK
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
@@ -54,7 +54,7 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes, output_shapefile):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
@@ -65,7 +65,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
         seconds=0,
         microseconds=0,
         milliseconds=0,
-        minutes=step_minutes,
+        minutes=0.05,
         hours=0,
         weeks=0
     ) #Задаем шаг определения координат
@@ -106,13 +106,15 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
     while dt < dt_end:
         # Расчет инерциальных пара
         # Считаем положение спутника
-        lon, lat, alt = get_lat_lon_sgp(tle_1, tle_2, dt)
-        alt = alt + 6363
-        X_s, Y_s, Z_s = geodetic_to_ISK(lat, lon, alt, wgs_84, dt)
+        lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
+        alt_s = alt_s*1000
+        X_s, Y_s, Z_s = geodetic_to_ISK(lat_s, lon_s, alt_s, wgs_84, dt)
 #        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
         X_t, Y_t, Z_t = geodetic_to_ISK(lat_t, lon_t, h_t, wgs_84, dt)
 #        X_t, Y_t, Z_t = fromLatLong(lat_t, lon_t, h_t, wgs_84)
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
+ #       print (f" {X_s}, {Y_s}, {Z_s}.\n"
+ #              f" {X_t}, {Y_t}, {Z_t}")
         X = (X_s-X_t)
         Y = (Y_s-Y_t)
         Z = (Z_s-Z_t)
@@ -122,19 +124,19 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
         f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
         f_grad = f_rad*(180/math.pi)
         # Считаем положение спутника
-        lon, lat, alt = get_lat_lon_sgp(tle_1, tle_2, dt)
-#        print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
-        if R_n < 800:
+ #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
+#        if f_grad  < 3  and R_n < R_z:
  #           print (R_n)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-            track_shape.point(lon, lat)
+        track_shape.point(lon_s, lat_s)
             # и атрибуты
-            track_shape.record(i, dt, lon, lat, R_s, R_t, R_n, f_grad)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
             # Не забываем про счётчики
-            i += 1
+        i += 1
             
         dt += delta
+    print (i)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
@@ -156,4 +158,4 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, step_minutes,
         return
 
 
-create_orbital_track_shapefile_for_day(tle_1, tle_2, utc_time, 1, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")
+create_orbital_track_shapefile_for_day(tle_1, tle_2, utc_time, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")
