@@ -19,7 +19,7 @@ sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
 
-#Задаем шаг определения координат
+#Задаем дату начала вычислений
 utc_time = datetime(2024,2,2,00,00,00)
 dt_start = utc_time + timedelta(
         days=0,
@@ -109,12 +109,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
         alt_s = alt_s*1000
         X_s, Y_s, Z_s = geodetic_to_ISK(lat_s, lon_s, alt_s, wgs_84, dt)
-#        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
         X_t, Y_t, Z_t = geodetic_to_ISK(lat_t, lon_t, h_t, wgs_84, dt)
-#        X_t, Y_t, Z_t = fromLatLong(lat_t, lon_t, h_t, wgs_84)
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
- #       print (f" {X_s}, {Y_s}, {Z_s}.\n"
- #              f" {X_t}, {Y_t}, {Z_t}")
         X = (X_s-X_t)
         Y = (Y_s-Y_t)
         Z = (Z_s-Z_t)
