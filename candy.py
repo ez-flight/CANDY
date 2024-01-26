@@ -12,15 +12,16 @@ from cal_cord import geodetic_to_geocentric, geodetic_to_ISK
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
-#s_name, tle_1, tle_2 = read_tle_base_file(37849)
-s_name, tle_1, tle_2 = read_tle_base_internet(37849)
-utc_time = datetime.utcnow()
+s_name, tle_1, tle_2 = read_tle_base_file(37849)
+#s_name, tle_1, tle_2 = read_tle_base_internet(37849)
+
 sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
 
 #Задаем шаг определения координат
-dt_start = datetime.now() + timedelta(
+utc_time = datetime(2024,2,2,00,00,00)
+dt_start = utc_time + timedelta(
         days=0,
         seconds=0,
         microseconds=0,
@@ -56,22 +57,25 @@ def get_position(tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
+    #Задаем Координаты интереса (СПб)
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
     h_t = 155
 
+    #Задаем шаг определения координат
     delta = timedelta(
         days=0,
         seconds=0,
         microseconds=0,
         milliseconds=0,
-        minutes=0.05,
+        minutes=1,
         hours=0,
         weeks=0
-    ) #Задаем шаг определения координат
+    )
 
+    #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
+        days=2,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -80,10 +84,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         weeks=0
     )
     dt = dt_start
-
-
-    # Создаём экземляр класса Orbital
-    orb = Orbital("N", line1=tle_1, line2=tle_2)
 
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
     track_shape = shapefile.Writer(output_shapefile, shapefile.POINT)
@@ -125,7 +125,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         f_grad = f_rad*(180/math.pi)
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
-#        if f_grad  < 3  and R_n < R_z:
+ #       if f_grad  < 2  and R_n < R_z:
  #           print (R_n)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
@@ -134,8 +134,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
             # Не забываем про счётчики
         i += 1
-            
         dt += delta
+
     print (i)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
@@ -158,4 +158,4 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         return
 
 
-create_orbital_track_shapefile_for_day(tle_1, tle_2, utc_time, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")
+create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")

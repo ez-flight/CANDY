@@ -54,7 +54,7 @@ def get_spacetrack_tle(
 
 
 def read_tle_base_file(norad_number):
-    with open("active.txt", "r") as fp:
+    with open("1.tle", "r") as fp:
         lines = fp.readlines()
 
     sats = []
