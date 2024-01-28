@@ -65,7 +65,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=10,
+        days=1,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -103,18 +103,18 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         #Персчитываем положение объекта из геодезической в инерциальную СК  на текущее время с расчетом компонентов скорости точки на земле
         pos_t, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
         X_t, Y_t, Z_t = pos_t
+
+        #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-        X = (X_s-X_t)
-        Y = (Y_s-Y_t)
-        Z = (Z_s-Z_t)
-        R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
+        R_n = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_t = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
+
         f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
         f_grad = f_rad*(180/math.pi)
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
         
-        if R_n < 1000:
+        if R_n < 1000 and f_grad < 5:
  #           print (R_n)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
@@ -147,6 +147,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         return
 
 #Задаем начальное время
-dt_start = datetime(2024, 1, 25, 0, 0, 0)
+dt_start = datetime(2024, 2, 19, 0, 0, 0)
 
 create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")

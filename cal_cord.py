@@ -94,15 +94,6 @@ def gmsts(utc_time):
     return gmst
 
 
-def GMST(utc_time): #гринвичское звёздное время
-    d = days(utc_time)
-    GMST = 280.46061837+360.98564736629*d
-    GMST = GMST-360*int(GMST/360)
-    if GMST<0:
-        GMST = 360.0+GMST
-    return GMST*pi/180.0
-
-
 def ISK_to_GSK(alfa, X_isk,Y_isk,Z_isk): # Перевод из ИСК Гринвеческую СК
     cz = math.cos(alfa) #alfa - гринвичское звёздное время в радианах
     sz = math.sin(alfa)
