@@ -1,5 +1,6 @@
 # Импорт модуля math
 import math
+import numpy as np
 from datetime import date, datetime, timedelta
 
 import shapefile
@@ -18,6 +19,8 @@ s_name, tle_1, tle_2 = read_tle_base_file(37849)
 sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
+
+
 
 #Задаем дату начала вычислений
 utc_time = datetime(2024,2,2,00,00,00)
@@ -57,6 +60,8 @@ def get_position(tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
+
+    w = 7,2292115*0.00001
     #Задаем Координаты интереса (СПб)
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
@@ -68,14 +73,14 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         seconds=0,
         microseconds=0,
         milliseconds=0,
-        minutes=1,
+        minutes=0.5,
         hours=0,
         weeks=0
     )
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=2,
+        days=10,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -115,21 +120,26 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         Y = (Y_s-Y_t)
         Z = (Z_s-Z_t)
         R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
-
+        R0 =  np.array([X_t, Y_t, Z_t])
+        R1 = np.array([-w, w, 0])
+   
+        print(R3)
         R_t = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
         f_grad = f_rad*(180/math.pi)
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
- #       if f_grad  < 2  and R_n < R_z:
+        
+        if 2 < f_grad  < 20  and R_n < R_z:
  #           print (R_n)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-        track_shape.point(lon_s, lat_s)
+            print (p)
+            track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
+            track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
             # Не забываем про счётчики
-        i += 1
+            i += 1
         dt += delta
 
     print (i)
