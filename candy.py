@@ -1,39 +1,25 @@
 # Импорт модуля math
 import math
-import numpy as np
 from datetime import date, datetime, timedelta
 
+import numpy as np
 import shapefile
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
 
-from cal_cord import geodetic_to_geocentric, geodetic_to_ISK
+from cal_cord import (geodetic_to_geocentric, geodetic_to_ISK,
+                      get_xyzv_from_latlon)
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
-s_name, tle_1, tle_2 = read_tle_base_file(37849)
+s_name, tle_1, tle_2 = read_tle_base_file(40420)
 #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 
 sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
-
-
-
-#Задаем дату начала вычислений
-utc_time = datetime(2024,2,2,00,00,00)
-dt_start = utc_time + timedelta(
-        days=0,
-        seconds=0,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0
-    )
-
 
 R_z=wgs84.radiusearthkm # радиус земли
 #R_z= 6378.137
@@ -61,19 +47,18 @@ def get_position(tle_1, tle_2, utc_time):
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
 
-    w = 7,2292115*0.00001
-    #Задаем Координаты интереса (СПб)
+    #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
-    h_t = 155
+    alt_t = 12
 
-    #Задаем шаг определения координат
+    #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=0,
+        seconds=1,
         microseconds=0,
         milliseconds=0,
-        minutes=0.5,
+        minutes=0,
         hours=0,
         weeks=0
     )
@@ -103,38 +88,36 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("R_s", "F", 40)
     track_shape.field("R_t", "F", 40)
     track_shape.field("R_n", "F", 40)
-    track_shape.field("Ф", "F", 40)
+    track_shape.field("φ", "F", 40)
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
     while dt < dt_end:
-        # Расчет инерциальных пара
-        # Считаем положение спутника
+        # Считаем положение спутника в инерциальной СК
+        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+
+        # Считаем положение спутника в геодезической СК
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
-        alt_s = alt_s*1000
-        X_s, Y_s, Z_s = geodetic_to_ISK(lat_s, lon_s, alt_s, wgs_84, dt)
-        X_t, Y_t, Z_t = geodetic_to_ISK(lat_t, lon_t, h_t, wgs_84, dt)
+
+        #Персчитываем положение объекта из геодезической в инерциальную СК  на текущее время с расчетом компонентов скорости точки на земле
+        pos_t, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
+        X_t, Y_t, Z_t = pos_t
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
         X = (X_s-X_t)
         Y = (Y_s-Y_t)
         Z = (Z_s-Z_t)
         R_n = math.sqrt((X**2)+(Y**2)+(Z**2))
-        R0 =  np.array([X_t, Y_t, Z_t])
-        R1 = np.array([-w, w, 0])
-   
-        print(R3)
         R_t = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         f_rad = math.acos(((R_n**2)+(R_s**2)-(R_t**2))/(2*R_n*R_s))
         f_grad = f_rad*(180/math.pi)
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {f_grad} в {dt}")
         
-        if 2 < f_grad  < 20  and R_n < R_z:
+        if R_n < 1000:
  #           print (R_n)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-            print (p)
             track_shape.point(lon_s, lat_s)
             # и атрибуты
             track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
@@ -163,5 +146,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         print("Unable to save shapefile")
         return
 
+#Задаем начальное время
+dt_start = datetime(2024, 1, 25, 0, 0, 0)
 
 create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")

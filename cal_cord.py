@@ -1,8 +1,9 @@
 import math
 from datetime import date, datetime, timedelta
 
-import numpy
-from pyorbital.orbital import astronomy
+import numpy as np
+import pyorbital
+from pyorbital.orbital import XKMPER, F, Orbital, astronomy
 from sgp4.earth_gravity import wgs84
 
 from calc_gmst_iau_1982 import calc_gmst
@@ -14,17 +15,54 @@ grs80 = (6378137, 298.257222100882711)
 #wgs84 = (6378137., 1./298.257223563)
 wgs84 = (6378137, 298.257223563)
 
-def dayss(utc_time):
-    year = utc_time.year
-    month = utc_time.month
-    day = utc_time.day
-    hour = utc_time.hour
-    minute = utc_time.minute
-    second = utc_time.second
-    dwhole = 367*year-int(7*(year+int((month+9)/12))/4)+int(275*month/9)+day-730531.5
-    dfrac = (hour+minute/60+second/3600)/24
-    d = dwhole+dfrac
-    return d
+
+A = 6378.137  # WGS84 Equatorial radius (km)
+B = 6356.752314245 # km, WGS84
+MFACTOR = 7.292115E-5
+
+def get_xyzv_from_latlon(time, lon, lat, alt):
+    """Calculate observer ECI position.
+        http://celestrak.com/columns/v02n03/
+    """
+    lon = np.deg2rad(lon)
+    lat = np.deg2rad(lat)
+
+    theta = (pyorbital.astronomy.gmst(time) + lon) % (2 * np.pi)
+    c = 1 / np.sqrt(1 + F * (F - 2) * np.sin(lat)**2)
+    sq = c * (1 - F)**2
+
+    achcp = (A * c + alt) * np.cos(lat)
+    x = achcp * np.cos(theta)  # kilometers
+    y = achcp * np.sin(theta)
+    z = (A * sq + alt) * np.sin(lat)
+
+    vx = -MFACTOR * y  # kilometers/second
+    vy = MFACTOR * x
+    vz = 0
+
+    return (x, y, z), (vx, vy, vz)
+
+def get_lonlatalt(pos, utc_time):
+    """Calculate sublon, sublat and altitude of satellite, considering the earth an ellipsoid.
+    http://celestrak.com/columns/v02n03/
+    """
+    (pos_x, pos_y, pos_z) = pos / XKMPER
+    lon = ((np.arctan2(pos_y * XKMPER, pos_x * XKMPER) - astronomy.gmst(utc_time)) % (2 * np.pi))
+    lon = np.where(lon > np.pi, lon - np.pi * 2, lon)
+    lon = np.where(lon <= -np.pi, lon + np.pi * 2, lon)
+
+    r = np.sqrt(pos_x ** 2 + pos_y ** 2)
+    lat = np.arctan2(pos_z, r)
+    e2 = F * (2 - F)
+    while True:
+        lat2 = lat
+        c = 1 / (np.sqrt(1 - e2 * (np.sin(lat2) ** 2)))
+        lat = np.arctan2(pos_z + c * e2 * np.sin(lat2), r)
+        if np.all(abs(lat - lat2) < 1e-10):
+            break
+    alt = r / np.cos(lat) - c
+    alt *= A
+    return np.rad2deg(lon), np.rad2deg(lat), alt
 
 def days(utc_time):
     year = utc_time.year

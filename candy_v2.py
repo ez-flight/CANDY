@@ -22,6 +22,7 @@ A = 6378.137  # WGS84 Equatorial radius (km)
 B = 6356.752314245 # km, WGS84
 MFACTOR = 7.292115E-5
 
+
 def get_xyzv_from_latlon(time, lon, lat, alt):
     """Calculate observer ECI position.
         http://celestrak.com/columns/v02n03/
@@ -44,6 +45,7 @@ def get_xyzv_from_latlon(time, lon, lat, alt):
 
     return (x, y, z), (vx, vy, vz)
 
+
 def get_lonlatalt(pos, utc_time):
     """Calculate sublon, sublat and altitude of satellite, considering the earth an ellipsoid.
     http://celestrak.com/columns/v02n03/
@@ -65,6 +67,7 @@ def get_lonlatalt(pos, utc_time):
     alt = r / np.cos(lat) - c
     alt *= A
     return np.rad2deg(lon), np.rad2deg(lat), alt
+
 
 def get_lat_lon_sgp(tle_1, tle_2, utc_time):
     # Инициализируем экземпляр класса Orbital двумя строками TLE
@@ -89,7 +92,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     #Координаты объекта в геодезической СК
     lat_t = 59.95  
     lon_t = 30.316667 
-    alt_t = 155
+    alt_t = 12
 
     #Задаем шаг по времени для прогноза
     delta = timedelta(
@@ -231,7 +234,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
         #print(R_n,f_grad,dt)
         
-        if R_n < 1000:
+        if f_grad < 60:
 #  #           print (R_n)
             track_shape.point(lon_s, lat_s)
             track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
@@ -239,7 +242,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         i += 1
             
         dt += delta
-        print(dt)
+ #       print(dt)
     print (i)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
