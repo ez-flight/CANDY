@@ -17,6 +17,8 @@ from read_TBF import read_tle_base_file, read_tle_base_internet
 s_name, tle_1, tle_2 = read_tle_base_file(40420)
 #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 
+filename = "space/" + s_name + ".shp"
+print (filename)
 sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
@@ -149,4 +151,4 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 #Задаем начальное время
 dt_start = datetime(2024, 2, 19, 0, 0, 0)
 
-create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, "/home/ez/space/Suomi NPP/Suomi_NPP_5min.shp")
+create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, filename)
