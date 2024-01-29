@@ -60,3 +60,19 @@ line=['0 ISS (ZARYA)',
 '2 25544  51.6428 130.9420 0004657 342.5227  11.5462 15.49048823317794']
 sat = Satrec.twoline2rv(line[1],line[2])
 print((sat.alta * sat.radiusearthkm), (sat.altp * sat.radiusearthkm))
+
+
+
+        if ϒ >  3.13:
+            print ("Внимание!")
+            print (ϒ)
+        dgh = R_s*math.sin(ϒ)
+        kgf = (dgh/R_0)
+        if  kgf > 0:
+            if kgf < math.pi:
+                #ugol = math.acos(kgf)
+                ugol =1
+                #print ("Внимание!")     
+                #print (ugol*(180/math.pi))
+            else:
+                print(f"{kgf},  {ϒ*(180/math.pi)}")
