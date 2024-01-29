@@ -69,7 +69,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=1,
+        seconds=10,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -128,36 +128,41 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         #*(180/math.pi)
 
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
-        y_grad = y *(180/math.pi)
+        y_grad = y * (180/math.pi)
         #Постоянная площадей
-        Q=math.acos(((X_s*Vx_s)+(Y_s*Vy_s)+(Z_s*Vz_s))/(R_s/V_s))
-        C=R_s*V_s*math.sin(Q)
+        Q = math.acos(((X_s*Vx_s)+(Y_s*Vy_s)+(Z_s*Vz_s))/(R_s/V_s))
+        C = R_s*V_s*math.sin(Q)
 
-        C1=Y_s*Vz_s-Z_s*Vy_s
-        C2=Z_s*Vx_s-X_s*Vz_s
-        C3=X_s*Vy_s-Y_s*Vx_s
+        C1 = Y_s*Vz_s-Z_s*Vy_s
+        C2 = Z_s*Vx_s-X_s*Vz_s
+        C3 = X_s*Vy_s-Y_s*Vx_s
 
-        nn11=1/(C*R_s)*(C2*Z_s-C3*Y_s)
-        nn12=C1/C
-        nn13=X_s/R_s
+        nn11 = 1/(C*R_s)*(C2*Z_s-C3*Y_s)
+        nn12 = C1/C
+        nn13 = X_s/R_s
 
-        nn21=1/(C*R_s)*(C3*X_s-C1*Z_s)
-        nn22=C2/C
-        nn23=Y_s/R_s
+        nn21 = 1/(C*R_s)*(C3*X_s-C1*Z_s)
+        nn22 = C2/C
+        nn23 = Y_s/R_s
 
-        nn31=1/(C*R_s)*(C1*Y_s-C2*X_s)
-        nn32=C3/C
-        nn33=Z_s/R_s
+        nn31 = 1/(C*R_s)*(C1*Y_s-C2*X_s)
+        nn32 = C3/C
+        nn33 = Z_s/R_s
 
-        Fif=math.acos(R_s*math.sin(y)/R_e)
-        Fif_grad = Fif *(180/math.pi)
+        Fif = math.acos(R_s*math.sin(y)/R_e)
+        Fif_grad = Fif * (180/math.pi)
 
-        N1=R_0*math.cos(Fif)*(((-Vx_s-We*Y_s)*nn11-(Vy_s-We*X_s)*nn21) -Vz_s*nn31)
-        N2=R_e*math.cos(Fif)*((-Vx_s-We*Y_s)*nn12-(Vy_s-We*X_s)*nn22 -Vz_s*nn32)
-        N0=R_e*math.sin(Fif)*((-Vx_s-We*Y_s)*nn13-(Vy_s-We*X_s)*nn23 -Vz_s*nn33) + (Lam*Fd*R_0)/2 + (X_s*Vx_s) + (Y_s*Vy_s) + (Z_s*Vz_s)
+        N1 = R_0*math.cos(Fif)*(((-Vx_s-We*Y_s)*nn11-(Vy_s-We*X_s)*nn21) - Vz_s * nn31)
+        N2 = R_e*math.cos(Fif)*((-Vx_s-We*Y_s)*nn12-(Vy_s-We*X_s)*nn22 - Vz_s * nn32)
+        N0 = R_e*math.sin(Fif)*((-Vx_s-We*Y_s)*nn13-(Vy_s-We*X_s)*nn23 - Vz_s * nn33) + (Lam*Fd*R_0)/2 + (X_s*Vx_s) + (Y_s*Vy_s) + (Z_s*Vz_s)
 
-        Lamf=math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
-        Fds=2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
+        Lamf = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
+        Fds = 2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
+
+        Lamf = Lamf*(180/math.pi)
+        if (Lamf < 0):
+            Lamf = 180 + Lamf
+            print(Lamf)
 
 #     Lamf=asin(-N0/(sqrt(N1**2+N2**2)))-atan(N1/N2)
 # c   Fd=2./Lam/R*(cos(Lamf)*N1+sin(Lamf)*N2-N0)
