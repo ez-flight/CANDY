@@ -104,7 +104,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("R_n", "F", 40)
     track_shape.field("ϒ", "F", 40)
     track_shape.field("φ", "F", 40)
-
+    track_shape.field("Lamf", "F", 40)
+    track_shape.field("Fd", "F", 40)
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
@@ -153,7 +154,10 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
         N1=R_0*math.cos(Fif)*(((-Vx_s-We*Y_s)*nn11-(Vy_s-We*X_s)*nn21) -Vz_s*nn31)
         N2=R_e*math.cos(Fif)*((-Vx_s-We*Y_s)*nn12-(Vy_s-We*X_s)*nn22 -Vz_s*nn32)
-        N0=R_e*math.sin(Fif)*((-Vx_s-We*Y_s)*nn13-(Vy_s-We*X_s)*nn23 -Vz_s*nn33) + Lam*Fd*R/2+ X_s*Vx_s+Y_s*Vy_s+Z_s*Vz_s
+        N0=R_e*math.sin(Fif)*((-Vx_s-We*Y_s)*nn13-(Vy_s-We*X_s)*nn23 -Vz_s*nn33) + (Lam*Fd*R_0)/2 + (X_s*Vx_s) + (Y_s*Vy_s) + (Z_s*Vz_s)
+
+        Lamf=math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
+        Fds=2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
 
 #     Lamf=asin(-N0/(sqrt(N1**2+N2**2)))-atan(N1/N2)
 # c   Fd=2./Lam/R*(cos(Lamf)*N1+sin(Lamf)*N2-N0)
@@ -166,7 +170,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
             # Определеяем геометрию
             track_shape.point(lon_s, lat_s)
             # и атрибуты
-            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, Fif_grad)
+            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, Fif_grad, Lamf, Fds)
             # Не забываем про счётчики
             i += 1
         dt += delta
