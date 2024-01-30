@@ -76,8 +76,8 @@ def read_tle_base_internet(norad_number):
     return s_name_f, tle_i_1, tle_i_2
 
 def _test():
-    print(read_tle_base_file(25544))
-    print(read_tle_base_internet(25544))
+#    print(read_tle_base_file(25544))
+    print(read_tle_base_internet(56756))
 
 
 if __name__ == "__main__":

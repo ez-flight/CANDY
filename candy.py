@@ -14,7 +14,8 @@ from cal_cord import (geodetic_to_geocentric, geodetic_to_ISK,
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
-s_name, tle_1, tle_2 = read_tle_base_file(40420)
+# 56756 Кондор ФКА
+s_name, tle_1, tle_2 = read_tle_base_file(56756)
 #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
 
 filename = "space/" + s_name + ".shp"
@@ -26,18 +27,6 @@ wgs_84 = (6378137, 298.257223563)
 R_z=wgs84.radiusearthkm # радиус земли
 #R_z= 6378.137
 u=398600.44158 #геоцентрическая гравитационная постоянная
-We=7.2292115E-5
-We=0.
-f=1/298.257
-h=0
-Re=6378.140
-Rp=(1-f)*(Re+h) 
-e2=6.694385E-3
-p=42.841382
-q=42.697725         
-
-Fd=0.0         
-Lam=0.000096   
 
 
 def get_lat_lon_sgp(tle_1, tle_2, utc_time):
@@ -60,6 +49,18 @@ def get_position(tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
+    We=7.2292115E-5
+    We=0.
+    f=1/298.257
+    h=0
+    Re=6378.140
+    Rp=(1-f)*(Re+h)
+    e2=6.694385E-3
+    p=42.841382
+    q=42.697725
+
+    Fd=0.0   
+    Lam=0.000096
 
     #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
@@ -69,7 +70,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=10,
+        seconds=1,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -104,8 +105,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("R_n", "F", 40)
     track_shape.field("ϒ", "F", 40)
     track_shape.field("φ", "F", 40)
-    track_shape.field("Lamf", "F", 40)
-    track_shape.field("Fd", "F", 40)
+#    track_shape.field("Lamf", "F", 40)
+#    track_shape.field("Fd", "F", 40)
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
@@ -125,18 +126,17 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vx_s**2)+(Vx_s**2))
-        #*(180/math.pi)
 
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
         #Постоянная площадей
         Q = math.acos(((X_s*Vx_s)+(Y_s*Vy_s)+(Z_s*Vz_s))/(R_s/V_s))
         C = R_s*V_s*math.sin(Q)
-
+        #Расчет компонентов вектора площадей
         C1 = Y_s*Vz_s-Z_s*Vy_s
         C2 = Z_s*Vx_s-X_s*Vz_s
         C3 = X_s*Vy_s-Y_s*Vx_s
-
+        #Расчет матрицы поворота
         nn11 = 1/(C*R_s)*(C2*Z_s-C3*Y_s)
         nn12 = C1/C
         nn13 = X_s/R_s
@@ -151,31 +151,24 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
         Fif = math.acos(R_s*math.sin(y)/R_e)
         Fif_grad = Fif * (180/math.pi)
+        #Определение вектора наклонной дальности
+        N1 = R_e*math.cos(Fif)*(((-Vx_s-(We*Y_s))*nn11-(Vy_s-(We*X_s))*nn21) - (Vz_s * nn31))
+        N2 = R_e*math.cos(Fif)*((-Vx_s-(We*Y_s))*nn12-(Vy_s-(We*X_s))*nn22 - (Vz_s * nn32))
+        N0 = R_e*math.sin(Fif)*((-Vx_s-(We*Y_s))*nn13-(Vy_s-(We*X_s))*nn23 -(Vz_s * nn33)) + (Lam * Fd * R_0)/2 + (X_s * Vx_s) + (Y_s * Vy_s) + (Z_s * Vz_s)
 
-        N1 = R_0*math.cos(Fif)*(((-Vx_s-We*Y_s)*nn11-(Vy_s-We*X_s)*nn21) - Vz_s * nn31)
-        N2 = R_e*math.cos(Fif)*((-Vx_s-We*Y_s)*nn12-(Vy_s-We*X_s)*nn22 - Vz_s * nn32)
-        N0 = R_e*math.sin(Fif)*((-Vx_s-We*Y_s)*nn13-(Vy_s-We*X_s)*nn23 - Vz_s * nn33) + (Lam*Fd*R_0)/2 + (X_s*Vx_s) + (Y_s*Vy_s) + (Z_s*Vz_s)
+ #       Lamf = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
+ #       Fd = 2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
 
-        Lamf = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
-        Fds = 2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
-
-        Lamf = Lamf*(180/math.pi)
-        if (Lamf < 0):
-            Lamf = 180 + Lamf
-            print(Lamf)
-
-#     Lamf=asin(-N0/(sqrt(N1**2+N2**2)))-atan(N1/N2)
-# c   Fd=2./Lam/R*(cos(Lamf)*N1+sin(Lamf)*N2-N0)
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {ϒ} в {dt}")
         
         if R_0 < 1000:
- #           print (R_n)
+            print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
             track_shape.point(lon_s, lat_s)
             # и атрибуты
-            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, Fif_grad, Lamf, Fds)
+            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, Fif_grad)
             # Не забываем про счётчики
             i += 1
         dt += delta
