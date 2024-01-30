@@ -59,6 +59,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     p=42.841382
     q=42.697725
 
+    #Кондор, длина волны 10 см, частота   3200
+    # Полоса рабочих частот, МГц 3100-3300
     Fd=0.0   
     Lam=0.000096
 
