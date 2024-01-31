@@ -50,20 +50,21 @@ def get_position(tle_1, tle_2, utc_time):
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
     We=7.2292115E-5
-    We=0.
-    f=1/298.257
-    h=0
-    Re=6378.140
-    Rp=(1-f)*(Re+h)
+ #   We=0.
+
+ #   Re=6378.140
+ 
     e2=6.694385E-3
     p=42.841382
     q=42.697725
 
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
-    Fd=0.0   
-    Lam=0.000096
-
+    Fd=0.0
+    F_zi = 3200000000
+    L_ps= 0.299792458/F_zi
+ #   print(L_ps)
+#    print (0.299792458/0.000096)
     #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
@@ -72,7 +73,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=1,
+        seconds=30,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -82,7 +83,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
+        days=30,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -108,7 +109,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("ϒ", "F", 40)
     track_shape.field("φ", "F", 40)
 #    track_shape.field("Lamf", "F", 40)
-#    track_shape.field("Fd", "F", 40)
+    track_shape.field("Fd", "F", 40)
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
@@ -128,6 +129,11 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vx_s**2)+(Vx_s**2))
+
+        #Расчеты Для формул ??????
+        f=1/298.257
+        h=0
+        Rp=(1-f)*(R_e + h)
 
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
@@ -151,31 +157,36 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         nn32 = C3/C
         nn33 = Z_s/R_s
 
-        Fif = math.acos(R_s*math.sin(y)/R_e)
-        Fif_grad = Fif * (180/math.pi)
+        fi = math.acos(R_s*math.sin(y)/R_e) 
+        fi_grad = fi * (180/math.pi)
         #Определение вектора наклонной дальности
-        N1 = R_e*math.cos(Fif)*(((-Vx_s-(We*Y_s))*nn11-(Vy_s-(We*X_s))*nn21) - (Vz_s * nn31))
-        N2 = R_e*math.cos(Fif)*((-Vx_s-(We*Y_s))*nn12-(Vy_s-(We*X_s))*nn22 - (Vz_s * nn32))
-        N0 = R_e*math.sin(Fif)*((-Vx_s-(We*Y_s))*nn13-(Vy_s-(We*X_s))*nn23 -(Vz_s * nn33)) + (Lam * Fd * R_0)/2 + (X_s * Vx_s) + (Y_s * Vy_s) + (Z_s * Vz_s)
+        N1 = R_e*math.cos(fi)*(((-Vx_s-(We*Y_s))*nn11-(Vy_s-(We*X_s))*nn21) - (Vz_s * nn31))
+        N2 = R_e*math.cos(fi)*((-Vx_s-(We*Y_s))*nn12-(Vy_s-(We*X_s))*nn22 - (Vz_s * nn32))+0.000000001
+        N0 = R_e*math.sin(fi)*((-Vx_s-(We*Y_s))*nn13-(Vy_s-(We*X_s))*nn23 -(Vz_s * nn33)) + (L_ps * Fd * R_0)/2 + (X_s * Vx_s) + (Y_s * Vy_s) + (Z_s * Vz_s)
 
- #       Lamf = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
- #       Fd = 2./Lam/R_0*(math.cos(Lamf)*N1+math.sin(Lamf)*N2-N0)
-
+        #Расчет угла при заданной Fd
+        ugol = math.asin(-N0/(math.sqrt(N1**2 + N2**2)))-math.atan(N1/N2)
+        ugol =ugol  * (180/math.pi)
+        if(ugol < 0):
+            ugol=180+ugol
+       #Доплеровская частота отраженного сигнала
+ #       Fd = 2./(L_ps*R_0*(math.cos(y)*N1+math.sin(y)*N2-N0))
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {ϒ} в {dt}")
         
-        if R_0 < 1000:
-            print (R_0)
+   #     if abs(Fd) < 20000:
+  #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-            track_shape.point(lon_s, lat_s)
+        track_shape.point(lon_s, lat_s)
             # и атрибуты
-            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, Fif_grad)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, fi_grad, ugol)
             # Не забываем про счётчики
-            i += 1
+        print(ugol)
+        i += 1
         dt += delta
 
- #   print (i)
+    print (i)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
@@ -248,6 +259,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 #     if(Lamf.Lt.0) Lamf=180+Lamf
 
 #Задаем начальное время
-dt_start = datetime(2024, 2, 19, 0, 0, 0)
+dt_start = datetime(2024, 2, 21, 0, 0, 0)
 
 create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, filename)
