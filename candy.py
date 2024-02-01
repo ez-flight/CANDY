@@ -7,9 +7,10 @@ import shapefile
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
-from calc_F_L import calk_f_doplera, calc_lamda
+
 from calc_cord import (geodetic_to_geocentric, geodetic_to_ISK,
-                      get_xyzv_from_latlon)
+                       get_xyzv_from_latlon)
+from calc_F_L import calc_lamda, calk_f_doplera
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
@@ -48,26 +49,17 @@ def get_position(tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
 
-    We=7.2292115E-5
- #   We=0.
 
- #   Re=6378.140
- 
+    #Кондор, длина волны 10 см, частота   3200
+    # Полоса рабочих частот, МГц 3100-3300
+#    F_zi = 3200000000
+#    L_ps= 0.299792458/F_zi
+     
     Fd=0.0         
     Lam=0.000096
     F_i = Lam * 29979245.8    
     print (F_i) #28780 Чего? (3130)
-    e2=6.694385e-3
-    p=42.841382
-    q=42.697725
 
-    #Кондор, длина волны 10 см, частота   3200
-    # Полоса рабочих частот, МГц 3100-3300
-#    Fd=0.0
-#    F_zi = 3200000000
-#    L_ps= 0.299792458/F_zi
- #   print(L_ps)
-#    print (0.299792458/0.000096)
     #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
@@ -135,18 +127,15 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
- 
+        #Расчет двух углов
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = ay * (180/math.pi)
+ 
         # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
         ugol = calc_lamda(Fd, Lam, y, ay, Rs, Vs, R_0, R_s, R_e)
         print (ugol)
-        #Доплеровская частота отраженного сигнала
- #       Fd = 2./(L_ps*R_0*(math.cos(y)*N1+math.sin(y)*N2-N0))
-        # Считаем положение спутника
- #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {ϒ} в {dt}")
         
    #     if abs(Fd) < 20000:
   #          print (R_0)
