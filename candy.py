@@ -1,4 +1,3 @@
-# Импорт модуля math
 import math
 from datetime import date, datetime, timedelta
 
@@ -8,8 +7,8 @@ import shapefile
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
 from sgp4.earth_gravity import wgs84
-
-from cal_cord import (geodetic_to_geocentric, geodetic_to_ISK,
+from calc_F_L import calk_f_doplera, calc_lamda
+from calc_cord import (geodetic_to_geocentric, geodetic_to_ISK,
                       get_xyzv_from_latlon)
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
@@ -54,15 +53,19 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
  #   Re=6378.140
  
-    e2=6.694385E-3
+    Fd=0.0         
+    Lam=0.000096
+    F_i = Lam * 29979245.8    
+    print (F_i) #28780 Чего? (3130)
+    e2=6.694385e-3
     p=42.841382
     q=42.697725
 
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
-    Fd=0.0
-    F_zi = 3200000000
-    L_ps= 0.299792458/F_zi
+#    Fd=0.0
+#    F_zi = 3200000000
+#    L_ps= 0.299792458/F_zi
  #   print(L_ps)
 #    print (0.299792458/0.000096)
     #Координаты объекта в геодезической СК
@@ -83,11 +86,11 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=30,
+        days=0,
         seconds=0,
         microseconds=0,
         milliseconds=0,
-        minutes=0,
+        minutes=60,
         hours=0,
         weeks=0
     )
@@ -109,13 +112,15 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("ϒ", "F", 40)
     track_shape.field("φ", "F", 40)
 #    track_shape.field("Lamf", "F", 40)
-    track_shape.field("Fd", "F", 40)
+    track_shape.field("ϒ", "F", 40)
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
     while dt < dt_end:
         # Считаем положение спутника в инерциальной СК
         X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+        Rs = X_s, Y_s, Z_s
+        Vs = Vx_s, Vy_s, Vz_s
 
         # Считаем положение спутника в геодезической СК
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
@@ -128,48 +133,17 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
         R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
-        V_s = math.sqrt((Vx_s**2)+(Vx_s**2)+(Vx_s**2))
+        V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
-        #Расчеты Для формул ??????
-        f=1/298.257
-        h=0
-        Rp=(1-f)*(R_e + h)
-
+ 
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
-        #Постоянная площадей
-        Q = math.acos(((X_s*Vx_s)+(Y_s*Vy_s)+(Z_s*Vz_s))/(R_s/V_s))
-        C = R_s*V_s*math.sin(Q)
-        #Расчет компонентов вектора площадей
-        C1 = Y_s*Vz_s-Z_s*Vy_s
-        C2 = Z_s*Vx_s-X_s*Vz_s
-        C3 = X_s*Vy_s-Y_s*Vx_s
-        #Расчет матрицы поворота
-        nn11 = 1/(C*R_s)*(C2*Z_s-C3*Y_s)
-        nn12 = C1/C
-        nn13 = X_s/R_s
-
-        nn21 = 1/(C*R_s)*(C3*X_s-C1*Z_s)
-        nn22 = C2/C
-        nn23 = Y_s/R_s
-
-        nn31 = 1/(C*R_s)*(C1*Y_s-C2*X_s)
-        nn32 = C3/C
-        nn33 = Z_s/R_s
-
-        fi = math.acos(R_s*math.sin(y)/R_e) 
-        fi_grad = fi * (180/math.pi)
-        #Определение вектора наклонной дальности
-        N1 = R_e*math.cos(fi)*(((-Vx_s-(We*Y_s))*nn11-(Vy_s-(We*X_s))*nn21) - (Vz_s * nn31))
-        N2 = R_e*math.cos(fi)*((-Vx_s-(We*Y_s))*nn12-(Vy_s-(We*X_s))*nn22 - (Vz_s * nn32))+0.000000001
-        N0 = R_e*math.sin(fi)*((-Vx_s-(We*Y_s))*nn13-(Vy_s-(We*X_s))*nn23 -(Vz_s * nn33)) + (L_ps * Fd * R_0)/2 + (X_s * Vx_s) + (Y_s * Vy_s) + (Z_s * Vz_s)
-
-        #Расчет угла при заданной Fd
-        ugol = math.asin(-N0/(math.sqrt(N1**2 + N2**2)))-math.atan(N1/N2)
-        ugol =ugol  * (180/math.pi)
-        if(ugol < 0):
-            ugol=180+ugol
-       #Доплеровская частота отраженного сигнала
+        ay = math.acos(((R_0*math.sin(y))/R_e))
+        ay_grad = ay * (180/math.pi)
+        # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
+        ugol = calc_lamda(Fd, Lam, y, ay, Rs, Vs, R_0, R_s, R_e)
+        print (ugol)
+        #Доплеровская частота отраженного сигнала
  #       Fd = 2./(L_ps*R_0*(math.cos(y)*N1+math.sin(y)*N2-N0))
         # Считаем положение спутника
  #       print(f"Наклонная Дальность -> {R_n:2f}  Ф -> {ϒ} в {dt}")
@@ -180,9 +154,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
             # Определеяем геометрию
         track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, fi_grad, ugol)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol)
             # Не забываем про счётчики
-        print(ugol)
+ #       print(ugol)
         i += 1
         dt += delta
 
@@ -259,6 +233,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 #     if(Lamf.Lt.0) Lamf=180+Lamf
 
 #Задаем начальное время
-dt_start = datetime(2024, 2, 21, 0, 0, 0)
+dt_start = datetime(2024, 2, 21, 3, 0, 0)
 
 create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, filename)
