@@ -1,17 +1,17 @@
 import math
 
-def ugol (Fd, Rs, Vs, R_0, R_s, R_e):
+
+def ugol (Fd, Lam, Rs, Vs, R_0, R_s, R_e):
+
         We=7.2292115E-5
         f=1/298.257
         h=0
         Re=6378.140
-        Rp=(1-f)*(Re+h) 
+        Rp=(1-f)*(Re+h)
         e2=6.694385E-3
         p=42.841382
-        q=42.697725         
+        q=42.697725
 
-        Fd=0.0         
-        Lam=0.000096        
 
         Xs, Ys, Zs = Rs
         VSx, VSy, VSz = Vs
@@ -47,10 +47,11 @@ def ugol (Fd, Rs, Vs, R_0, R_s, R_e):
         Lamf = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
 # c   Fd=2./Lam/R*(cos(Lamf)*N1+sin(Lamf)*N2-N0)
 
-        
         Lamf=Lamf*180./3.1415
         if(Lamf<0):
             Lamf=180+Lamf
+        return Lamf
+
 
 def calk_fdoplera (Fd, Lam, Rs, Vs, R_0, R_s, R_e):
         We=7.2292115E-5
