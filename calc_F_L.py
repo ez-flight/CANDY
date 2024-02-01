@@ -2,7 +2,8 @@ import math
 
 
 def calc_lamda (Fd, Lam, Gam, Fif, Rs, Vs, R_0, R_s, R_e):
-        #
+        
+        #Здесь мы должны выставвить F Доплера, чтоб получить угол ФИ(ay)
         #Угловая скорость вращения земли радиан в секунду    
         We=  7.292115E-5
 #        We=7.292115E-5
@@ -44,12 +45,28 @@ def calc_lamda (Fd, Lam, Gam, Fif, Rs, Vs, R_0, R_s, R_e):
         N1 = R_e*math.cos(Fif)*((-VSx-(We*Ys))*nn11-(VSy-(We*Xs))*nn21-(VSz*nn31))
         N2 = R_e*math.cos(Fif)*((-VSx-(We*Ys))*nn12-(VSy-(We*Xs))*nn22-(VSz*nn32))# + 0.000000001
         N0 = R_e*math.sin(Fif)*((-VSx-(We*Ys))*nn13-(VSy-(We*Xs))*nn23-(VSz*nn33)) + (Lam*Fd*R_0)/2 + (Xs*VSx)+(Ys*VSy)+(Zs*VSz)
+        
+        #Решение квадратного уравнения
+        a = ((N1**2)+(N2**2))
+        b = 2*N1*N0
+        c =  ((N0**2)-(N2**2))
+        D = (b**2)-(4*a*c)
+ #       if D>=0 :
+ #               print (f"                           {D}")
+        x1 = (-b+math.sqrt(D))/2*a
+        x2 = (-b-math.sqrt(D))/2*a
+        if abs(x1) <= 1:
+#                print (f"               {abs(x1)}")
+              print (f"               {math.acos(x1)}")
+ #       if abs(x2) <=1:
+#        print (f"                               {abs(x2)}")
+              print (f"                               {math.acos(x2)}")
 
-        Lamf = math.asin(-N0/(math.sqrt((N1**2)+(N2**2))))-math.atan(N1/N2)
-        Lamf=Lamf*180./3.1415
+#        Lamf = math.asin(-N0/(math.sqrt((N1**2)+(N2**2))))-math.atan(N1/N2)
+ #       Lamf=Lamf*180./3.1415
  #       if(Lamf<0):
  #           Lamf=180+Lamf
-        return Lamf
+#      return Lamf
 
 
 def calk_f_doplera(Fd, y, Lam, Rs, Vs, R_0, R_s, R_e):
