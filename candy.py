@@ -48,19 +48,12 @@ def get_position(tle_1, tle_2, utc_time):
 
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
-
-
-
      
     Fd=0.0
-
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
- #   F_zi = 3200 #МГц
-  #  Lam= 299792.458/F_zi #Получаем длину волны в метрах
-
-    Lam=0.000096  
-#    F_i = Lam * 299792.458    
+    F_zi = 3200 #МГц
+    Lam= 299792.458/F_zi #Получаем длину волны в метрах
 
     #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
@@ -80,7 +73,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=5,
+        days=1,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -103,10 +96,11 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("R_s", "F", 40)
     track_shape.field("R_t", "F", 40)
     track_shape.field("R_n", "F", 40)
-    track_shape.field("ϒ", "F", 40)
-    track_shape.field("φ", "F", 40)
-#    track_shape.field("Lamf", "F", 40)
-    track_shape.field("ϒ", "F", 40)
+    track_shape.field("ϒ", "F", 40, 5)
+    track_shape.field("φ", "F", 40, 5)
+    track_shape.field("λ", "F", 40, 5)
+    track_shape.field("f", "F", 40)
+
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
 
@@ -136,9 +130,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         ay_grad = ay * (180/math.pi)
  
         # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
-        #ugol =
-        calc_lamda(Fd, Lam, y, ay, Rs, Vs, R_0, R_s, R_e)
-#        print (ugol)
+        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e)
         
    #     if abs(Fd) < 20000:
   #          print (R_0)
@@ -146,7 +138,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
             # Определеяем геометрию
         track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol)
             # Не забываем про счётчики
  #       print(ugol)
         i += 1
@@ -154,7 +146,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     print (i)
 
-    print (Lam) #28780 Чего? (3130)
+#    print (Lam) #28780 Чего? (3130)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
