@@ -10,7 +10,7 @@ from sgp4.earth_gravity import wgs84
 
 from calc_cord import (geodetic_to_geocentric, geodetic_to_ISK,
                        get_xyzv_from_latlon)
-from calc_F_L import calc_lamda, calk_f_doplera
+from calc_F_L import calc_lamda, calc_f_doplera
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
@@ -130,7 +130,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         ay_grad = ay * (180/math.pi)
  
         # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
-        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e)
+        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
         
    #     if abs(Fd) < 20000:
   #          print (R_0)
