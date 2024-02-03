@@ -33,7 +33,7 @@ def calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
 
     Lam_f = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
 
-#    Lam_f = Lam_f*180./3.1415
+    Lam_f = Lam_f*180./math.pi
 
 #    if (Lam_f < 0):
 #        Lam_f = 180+Lam_f
@@ -45,7 +45,7 @@ def calc_f_doplera(Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
     
     We = 7.2292115E-5
     Fd = 0
-
+    Lam_f = Lam_f * math.pi/180
     X_s, Y_s, Z_s = Rs
     Vx_s, Vy_s, Vz_s = Vs
 

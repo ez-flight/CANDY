@@ -10,7 +10,7 @@ from sgp4.earth_gravity import wgs84
 
 from calc_cord import (geodetic_to_geocentric, geodetic_to_ISK,
                        get_xyzv_from_latlon)
-from calc_F_L import calc_lamda, calc_f_doplera
+from calc_F_L import calc_f_doplera, calc_lamda
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
 #25544 37849
@@ -49,7 +49,8 @@ def get_position(tle_1, tle_2, utc_time):
 
 def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
      
-    Fd=0.0
+#    Fd=0.0
+    ugol = 90
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
     F_zi = 3200 #МГц
@@ -99,7 +100,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     track_shape.field("ϒ", "F", 40, 5)
     track_shape.field("φ", "F", 40, 5)
     track_shape.field("λ", "F", 40, 5)
-    track_shape.field("f", "F", 40)
+    track_shape.field("f", "F", 40, 5)
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -130,15 +131,19 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         ay_grad = ay * (180/math.pi)
  
         # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
-        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        
+#        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+#        if (ugol < 0):
+#            ugol = 180+ugol
+#        ugol = ugol - 90
+        Fd = calc_f_doplera (ugol, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        print (f"{Fd:.5f}")
    #     if abs(Fd) < 20000:
   #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
         track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol, Fd)
             # Не забываем про счётчики
  #       print(ugol)
         i += 1
@@ -146,7 +151,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 
     print (i)
 
-#    print (Lam) #28780 Чего? (3130)
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
@@ -167,57 +171,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         print("Unable to save shapefile")
         return
     
-#     We=7.2292115E-5
-# c   We=0.
-#     f=1/298.257
-#     h=0
-#     Re=6378.140
-#     Rp=(1-f)*(Re+h) 
-#     e2=6.694385E-3
-#     p=42.841382
-#     q=42.697725         
-
-#     Fd=0.0         
-#     Lam=0.000096        
-
-#     Rs=sqrt((Xs)**2+(Ys)**2+(Zs)**2)
-#     VS=sqrt((VSx)**2+(VSy)**2+(VSz)**2)  
-#     Gam=acos((Rs**2+R**2-Rt**2)/(2*Rs*R))
-
-#     Q=acos((Xs*VSx+Ys*VSy+Zs*VSz)/Rs/VS)
-#     C=Rs*VS*sin(Q)
-
-#     C1=Ys*VSz-Zs*VSy
-#     C2=Zs*VSx-Xs*VSz
-#     C3=Xs*VSy-Ys*VSx
-
-#     nn11=1/(C*Rs)*(C2*Zs-C3*Ys)
-#     nn12=C1/C
-#     nn13=Xs/Rs
-
-#     nn21=1/(C*Rs)*(C3*Xs-C1*Zs)
-#     nn22=C2/C
-#     nn23=Ys/Rs
-
-#     nn31=1/(C*Rs)*(C1*Ys-C2*Xs)
-#     nn32=C3/C
-#     nn33=Zs/Rs
-
-#     Fif=acos(R*sin(Gam)/Rt)
-
-#     N1=Rt*cos(Fif)*((-VSx-We*Ys)*nn11-(VSy-We*Xs)*nn21
-#     *   -VSz*nn31)
-#     N2=Rt*cos(Fif)*((-VSx-We*Ys)*nn12-(VSy-We*Xs)*nn22
-#     *   -VSz*nn32)+0.000000001D00
-#     N0=Rt*sin(Fif)*((-VSx-We*Ys)*nn13-(VSy-We*Xs)*nn23 -VSz*nn33)+ Lam*Fd*R/2+ Xs*VSx+Ys*VSy+Zs*VSz
-
-#     Lamf=asin(-N0/(sqrt(N1**2+N2**2)))-atan(N1/N2)
-# c   Fd=2./Lam/R*(cos(Lamf)*N1+sin(Lamf)*N2-N0)
-
-        
-#     Lamf=Lamf*180./3.1415
-#     if(Lamf.Lt.0) Lamf=180+Lamf
-
 #Задаем начальное время
 dt_start = datetime(2024, 2, 21, 3, 0, 0)
 
