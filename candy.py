@@ -12,21 +12,6 @@ from calc_cord import (geodetic_to_geocentric, get_xyzv_from_latlon)
 from calc_F_L import calc_f_doplera, calc_lamda
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
-#25544 37849
-# 56756 Кондор ФКА
-s_name, tle_1, tle_2 = read_tle_base_file(56756)
-#s_name, tle_1, tle_2 = read_tle_base_internet(37849)
-
-filename = "space/" + s_name + ".shp"
-print (filename)
-sat = Satrec.twoline2rv(tle_1, tle_2)
-
-wgs_84 = (6378137, 298.257223563)
-
-#R_z=wgs84.radiusearthkm # радиус земли
-R_z= 6378.137
-u=398600.44158 #геоцентрическая гравитационная постоянная
-
 
 def get_lat_lon_sgp(tle_1, tle_2, utc_time):
     # Инициализируем экземпляр класса Orbital двумя строками TLE
@@ -46,7 +31,7 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapefile):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, output_shapefile):
      
 #    Fd=0.0
     ugol = 90
@@ -60,27 +45,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
     lon_t = 30.316667 #37.6173
     alt_t = 12
 
-    #Задаем шаг по времени для прогноза
-    delta = timedelta(
-        days=0,
-        seconds=10,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0
-    )
-
-    #Задаем количество суток для прогноза
-    dt_end = dt_start + timedelta(
-        days=1,
-        seconds=0,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0
-    )
     dt = dt_start
 
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
@@ -134,18 +98,20 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 #        if (ugol < 0):
 #            ugol = 180+ugol
 #        ugol = ugol - 90
-        Fd = calc_f_doplera (ugol, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        print (f"{Fd:.5f}")
-   #     if abs(Fd) < 20000:
+        if R_0 < 1580 :
+            Fd = calc_f_doplera (ugol, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s) * 1000
+            #print (f"{Fd:.5f}")
+            if Fd < 0 and Fd > -3:
+                print (f"{Fd}")
   #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-        track_shape.point(lon_s, lat_s)
+                track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol, Fd)
+                track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol, Fd)
             # Не забываем про счётчики
  #       print(ugol)
-        i += 1
+                i += 1
         dt += delta
 
     print (i)
@@ -169,8 +135,51 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
         # Вдруг нет прав на запись или вроде того...
         print("Unable to save shapefile")
         return
-    
-#Задаем начальное время
-dt_start = datetime(2024, 2, 21, 3, 0, 0)
 
-create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, filename)
+def _test():
+
+    #25544 37849
+    # 56756 Кондор ФКА
+    s_name, tle_1, tle_2 = read_tle_base_file(56756)
+    #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
+
+    filename = "space/" + s_name + ".shp"
+    print (filename)
+
+ #   sat = Satrec.twoline2rv(tle_1, tle_2)
+
+ #   wgs_84 = (6378137, 298.257223563)
+
+    #R_z=wgs84.radiusearthkm # радиус земли
+#    R_z= 6378.137
+#    u=398600.44158 #геоцентрическая гравитационная постоянная
+    
+    #Задаем начальное время
+    dt_start = datetime(2024, 2, 21, 3, 0, 0)
+    #Задаем шаг по времени для прогноза
+    delta = timedelta(
+        days=0,
+        seconds=10,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=0,
+        weeks=0
+    )
+
+    #Задаем количество суток для прогноза
+    dt_end = dt_start + timedelta(
+        days=16,
+        seconds=0,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=0,
+        weeks=0
+    )
+
+    create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, filename)
+
+
+if __name__ == "__main__":
+    _test()
