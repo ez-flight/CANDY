@@ -6,8 +6,6 @@ import pyorbital
 from pyorbital.orbital import XKMPER, F, Orbital, astronomy
 from sgp4.earth_gravity import wgs84
 
-from calc_gmst_iau_1982 import calc_gmst
-
 #pi =math.pi
 
 ## Ellipsoid Parameters as tuples (semi major axis, inverse flattening)
@@ -137,15 +135,6 @@ def geodetic_to_geocentric(latitude, longitude, height, ellipsoid):
     return x/1000, y/1000, z/1000
 
 
-def geodetic_to_ISK(latitude, longitude, height, ellipsoid, utc_time):
-    X_gsk, Y_gsk, Z_gsk = geodetic_to_geocentric(latitude, longitude, height, ellipsoid)
-    pr = math.sqrt((X_gsk**2)+(Y_gsk**2)+(Z_gsk**2))
-#    print(f"Проверка на радиус земли {pr}")
-#    print(f"X = {X_gsk}, Y = {Y_gsk}, Z = {Z_gsk} ")
-    alfa = calc_gmst(utc_time)
-    X_isk, Y_isk, Z_isk = GSK_to_ISK(alfa, X_gsk, Y_gsk, Z_gsk)
-    return X_isk, Y_isk, Z_isk
-
 def _test():
     lat = 55.75583
     lon = 37.6173
@@ -166,8 +155,8 @@ def _test():
         weeks=0
     )
     dt = dt_start
-    X_isk, Y_isk, Z_isk = geodetic_to_ISK(lat, lon, h, wgs84, dt_start)
-    print(f"X = {X_isk}, Y = {Y_isk}, Z = {Z_isk} ")
+ #   X_isk, Y_isk, Z_isk = geodetic_to_ISK(lat, lon, h, wgs84, dt_start)
+  #  print(f"X = {X_isk}, Y = {Y_isk}, Z = {Z_isk} ")
 
     while dt<dt_end:
 #        if calc_gmst(dt) < 0.0001:

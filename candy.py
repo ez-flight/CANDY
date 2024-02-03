@@ -6,10 +6,9 @@ import shapefile
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 from sgp4.api import Satrec
-from sgp4.earth_gravity import wgs84
+#from sgp4.earth_gravity import wgs84
 
-from calc_cord import (geodetic_to_geocentric, geodetic_to_ISK,
-                       get_xyzv_from_latlon)
+from calc_cord import (geodetic_to_geocentric, get_xyzv_from_latlon)
 from calc_F_L import calc_f_doplera, calc_lamda
 from read_TBF import read_tle_base_file, read_tle_base_internet
 
@@ -24,8 +23,8 @@ sat = Satrec.twoline2rv(tle_1, tle_2)
 
 wgs_84 = (6378137, 298.257223563)
 
-R_z=wgs84.radiusearthkm # радиус земли
-#R_z= 6378.137
+#R_z=wgs84.radiusearthkm # радиус земли
+R_z= 6378.137
 u=398600.44158 #геоцентрическая гравитационная постоянная
 
 
@@ -175,4 +174,3 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, output_shapef
 dt_start = datetime(2024, 2, 21, 3, 0, 0)
 
 create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, filename)
-
