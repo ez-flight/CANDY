@@ -32,9 +32,10 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, ugol):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape):
      
 #    Fd=0.0
+    ugol = 90
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
     F_zi = 3200 #МГц
@@ -46,6 +47,21 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
     alt_t = 12
 
     dt = dt_start
+
+    # Добавляем поля - идентификатор, время, широту и долготу
+    # N - целочисленный тип, C - строка, F - вещественное число
+    # Для времени придётся использовать строку, т.к. нет поддержки формата "дата и время"
+    track_shape.field("ID", "N", 40)
+    track_shape.field("TIME", "C", 40)
+    track_shape.field("LON", "F", 40)
+    track_shape.field("LAT", "F", 40)
+    track_shape.field("R_s", "F", 40)
+    track_shape.field("R_t", "F", 40)
+    track_shape.field("R_n", "F", 40)
+    track_shape.field("ϒ", "F", 40, 5)
+    track_shape.field("φ", "F", 40, 5)
+    track_shape.field("λ", "F", 40, 5)
+    track_shape.field("f", "F", 40, 5)
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -73,17 +89,17 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
         ay = math.acos(((R_0*math.sin(y))/R_e))
-        ay_grad = math.degrees(ay)
+        ay_grad = ay * (180/math.pi)
  
         # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
 #        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
 #        if (ugol < 0):
 #            ugol = 180+ugol
 #        ugol = ugol - 90
-        if R_0 < 1000 :
+        if R_0 < 1580 :
             Fd = calc_f_doplera (ugol, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s) * 1000
             #print (f"{Fd:.5f}")
-            if abs(Fd) < 3:
+            if Fd < 0 and Fd > -3:
                 print (f"{Fd}")
   #          print (R_0)
             # Создаём в шейп-файле новый объект
@@ -113,22 +129,14 @@ def _test():
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
     track_shape = shapefile.Writer(filename, shapefile.POINT)
 
-    # Добавляем поля - идентификатор, время, широту и долготу
-    # N - целочисленный тип, C - строка, F - вещественное число
-    # Для времени придётся использовать строку, т.к. нет поддержки формата "дата и время"
-    track_shape.field("ID", "N", 40)
-    track_shape.field("TIME", "C", 40)
-    track_shape.field("LON", "F", 40)
-    track_shape.field("LAT", "F", 40)
-    track_shape.field("R_s", "F", 40)
-    track_shape.field("R_t", "F", 40)
-    track_shape.field("R_n", "F", 40)
-    track_shape.field("ϒ", "F", 40, 5)
-    track_shape.field("φ", "F", 40, 5)
-    track_shape.field("λ", "F", 40, 5)
-    track_shape.field("f", "F", 40, 5)
+ #   sat = Satrec.twoline2rv(tle_1, tle_2)
 
-     
+ #   wgs_84 = (6378137, 298.257223563)
+
+    #R_z=wgs84.radiusearthkm # радиус земли
+#    R_z= 6378.137
+#    u=398600.44158 #геоцентрическая гравитационная постоянная
+    
     #Задаем начальное время
     dt_start = datetime(2024, 2, 21, 3, 0, 0)
     #Задаем шаг по времени для прогноза
@@ -144,7 +152,7 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
+        days=16,
         seconds=0,
         microseconds=0,
         milliseconds=0,
@@ -153,15 +161,12 @@ def _test():
         weeks=0
     )
 
-    ugol = 89
-    while ugol < 92:
-       track_shape = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, ugol)
+    track_shape = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape)
 
         # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
-       ugol += 1
-       
+
     try:
         # Создаем файл .prj с тем же именем, что и выходной .shp
         prj = open("%s.prj" % filename.replace(".shp", ""), "w")
