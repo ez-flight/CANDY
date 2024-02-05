@@ -32,14 +32,16 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, ugol):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, Lam_f):
      
 #    Fd=0.0
     #Кондор, длина волны 10 см, частота   3200
     # Полоса рабочих частот, МГц 3100-3300
-    F_zi = 3200 #МГц
-    Lam= 299792.458/F_zi #Получаем длину волны в метрах
-
+#    F_zi = 300 #МГц
+#    Lam= 299.792458/F_zi #Получаем длину волны в метрах
+    Lam=0.000096
+#    F_zi 
+    print (299.792458/Lam)
     #Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
@@ -80,24 +82,22 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
 #        if (ugol < 0):
 #            ugol = 180+ugol
 #        ugol = ugol - 90
-        if R_0 < 1000 :
-            Fd = calc_f_doplera (ugol, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s) * 1000
-            #print (f"{Fd:.5f}")
-            if abs(Fd) < 3:
-                print (f"{Fd}")
+        Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        #print (f"{Fd:.5f}")
+ #       print (f"{Fd}")
   #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-                track_shape.point(lon_s, lat_s)
+        track_shape.point(lon_s, lat_s)
             # и атрибуты
-                track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, ugol, Fd)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd)
             # Не забываем про счётчики
  #       print(ugol)
-                i += 1
+        i += 1
         dt += delta
 
     print (i)
-    return track_shape 
+    return track_shape
    
 
 
@@ -134,7 +134,7 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=10,
+        seconds=30,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -144,8 +144,8 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
-        seconds=0,
+        days=0,
+        seconds=5689,
         microseconds=0,
         milliseconds=0,
         minutes=0,

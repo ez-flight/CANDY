@@ -71,7 +71,7 @@ def calc_f_doplera(Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
     N1 = R_e*math.cos(ay)*((-Vx_s-We*Y_s)*nn11 - (Vy_s-We*X_s)*nn21 - Vz_s*nn31)
     N2 = R_e*math.cos(ay)*((-Vx_s-We*Y_s)*nn12 - (Vy_s-We*X_s)*nn22 - Vz_s*nn32)
     N0 = R_e*math.sin(ay)*((-Vx_s-We*Y_s)*nn13 - (Vy_s-We*X_s)*nn23 - Vz_s*nn33) + Lam*Fd*R_0/2 + X_s*Vx_s+Y_s*Vy_s+Z_s*Vz_s
-
+ #   print (Lam)
     Fd = 2./Lam/R_0*(math.cos(Lam_f)*N1+math.sin(Lam_f)*N2-N0)
 
     return Fd
@@ -90,11 +90,13 @@ def _test():
         R_e = 6374.148410772227
         V_s = 7.5948862499392655
         #0.5090215203600934    -4.880767317621834e-12
-        Lam_f = calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
+#        Lam_f = calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
+        Lam_f = 90
+ #       print (Lam_f)
         Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
 #        if Fd == -4.880767317621834e-12:
-        print (f"Fd = {Fd:.2f}  Работает)))")
-
+#        print (f"Fd = {Fd:.2f}  Работает)))")
+        print (Fd)
 
 if __name__ == "__main__":
     _test()
