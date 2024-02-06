@@ -67,6 +67,7 @@ def read_tle_base_file(norad_number):
         tle_string = sats[j]
         s_name, tle_1, tle_2 = tle_string.strip().splitlines()
         sat = Satrec.twoline2rv(tle_1, tle_2)
+        print (tle_1,tle_2)
         if sat.satnum == norad_number:
             return s_name, tle_1, tle_2
 
@@ -76,8 +77,8 @@ def read_tle_base_internet(norad_number):
     return s_name_f, tle_i_1, tle_i_2
 
 def _test():
-#    print(read_tle_base_file(25544))
-    print(read_tle_base_internet(56756))
+    print(read_tle_base_file(25544))
+#    print(read_tle_base_internet(56756))
 
 
 if __name__ == "__main__":

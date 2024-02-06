@@ -141,6 +141,15 @@ def _test():
         hours=0,
         weeks=0
     )
+    delta_2 = timedelta(
+        days=0,
+        seconds=30,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=0,
+        weeks=0
+    )
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
@@ -161,6 +170,7 @@ def _test():
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
        ugol += 1
+       
        
     try:
         # Создаем файл .prj с тем же именем, что и выходной .shp

@@ -76,27 +76,62 @@ def calc_f_doplera(Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
 
     return Fd
 
-
 def _test():
 
-        Fd=0.0      
-        Lam=0.000096
-        Gam = 0.3014922881313002
-        ay = 0.9424943475517047
-        Rs = (463.34597230409884, -1207.8055361811378, -6768.479049206354)
-        Vs = (-2.957566053472197, -6.918572395634309, 1.0336615477187714)
-        R_0 = 12616.944514074316
-        R_s = 6890.993567173429
-        R_e = 6374.148410772227
-        V_s = 7.5948862499392655
-        #0.5090215203600934    -4.880767317621834e-12
-#        Lam_f = calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
-        Lam_f = 90
- #       print (Lam_f)
-        Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
-#        if Fd == -4.880767317621834e-12:
-#        print (f"Fd = {Fd:.2f}  Работает)))")
-        print (Fd)
+    Fd=0.0      
+    Lam=0.000096
+    Gam = 0.3014922881313002
+    ay = 0.9424943475517047
+    Rs = (463.34597230409884, -1207.8055361811378, -6768.479049206354)
+    Vs = (-2.957566053472197, -6.918572395634309, 1.0336615477187714)
+    R_0 = 12616.944514074316
+    R_s = 6890.993567173429
+    R_e = 6374.148410772227
+    V_s = 7.5948862499392655
+    #0.5090215203600934    -4.880767317621834e-12
+ #   Lam_f = calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
+    Lam_f = 90
+ #  print (Lam_f)
+    Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s)
+#   if Fd == -4.880767317621834e-12:
+#   print (f"Fd = {Fd:.2f}  Работает)))")
+    print (Fd)
+
+
+def _test_2():
+
+    tle_1 = ["1 56756U 23074A   24029.75507617  .00007830  00000+0  37007-3 0  9997"]
+    tle_2 = ["2 56756  97.4361 225.8387 0001732  73.7060 286.4365 15.19669782 37640"]
+
+     
+    #Задаем начальное время
+    dt_start = datetime(2024, 2, 21, 3, 0, 0)
+    #Задаем шаг по времени для прогноза
+    delta = timedelta(
+        days=0,
+        seconds=30,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=0,
+        weeks=0
+    )
+    #Задаем количество суток для прогноза
+    dt_end = dt_start + timedelta(
+        days=0,
+        seconds=5689,
+        microseconds=0,
+        milliseconds=0,
+        minutes=0,
+        hours=0,
+        weeks=0
+    )
+
+    #Координаты объекта в геодезической СК (lat,lon, alt)
+    pos_t = 59.95, 30.316667, 12
+
+    create_orbital_track_for_f_doplera (tle_1, tle_2, dt_start, dt_end, delta, pos_t)
+
 
 if __name__ == "__main__":
-    _test()
+    _test_2()
