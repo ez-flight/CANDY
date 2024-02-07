@@ -1,7 +1,8 @@
 import math
 from datetime import date, datetime, timedelta
+
 from calc_F_L import calc_f_doplera, calc_lamda
-from candy import get_position, get_lat_lon_sgp, get_xyzv_from_latlon
+from candy import get_lat_lon_sgp, get_position, get_xyzv_from_latlon
 
 
 def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, pos_t, Lam_f):
@@ -19,6 +20,7 @@ def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, po
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
+    mas = []
 
     while dt < dt_end:
         # Считаем положение спутника в инерциальной СК
@@ -46,11 +48,12 @@ def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, po
         ay_grad = math.degrees(ay)
  
         Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        mas = i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd
+        mas.append ([ i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd])
         #print (f"{Fd:.5f}")
         i += 1
         dt += delta
-        print (mas)
+    mas2 = sorted(mas, reverse=True, key=lambda x: x[10])
+    print (mas2)    
 
 
 
@@ -65,10 +68,10 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=30,
+        seconds=0,
         microseconds=0,
         milliseconds=0,
-        minutes=0,
+        minutes=2,
         hours=0,
         weeks=0
     )
