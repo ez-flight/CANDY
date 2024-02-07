@@ -67,7 +67,6 @@ def read_tle_base_file(norad_number):
         tle_string = sats[j]
         s_name, tle_1, tle_2 = tle_string.strip().splitlines()
         sat = Satrec.twoline2rv(tle_1, tle_2)
-        print (tle_1,tle_2)
         if sat.satnum == norad_number:
             return s_name, tle_1, tle_2
 

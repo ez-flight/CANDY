@@ -1,6 +1,8 @@
 import math
 from datetime import date, datetime, timedelta
 
+import shapefile
+
 from calc_F_L import calc_f_doplera, calc_lamda
 from candy import get_lat_lon_sgp, get_position, get_xyzv_from_latlon
 
@@ -52,8 +54,7 @@ def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, po
         #print (f"{Fd:.5f}")
         i += 1
         dt += delta
-    mas2 = sorted(mas, reverse=True, key=lambda x: x[10])
-    print (mas2)    
+    return mas   
 
 
 
@@ -85,11 +86,53 @@ def _test():
         hours=0,
         weeks=0
     )
-
+    mas = []
     #Координаты объекта в геодезической СК (lat,lon, alt)
-    pos_t = 59.95, 30.316667, 12
+    pos_t_1 = 59.95, 30.316667, 12
+    pos_t_2 = 61.796111, 34.349167, 112
+    mas1 = create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, pos_t_1, Lam_f=90)
+    mas2 = create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, pos_t_2, Lam_f=90)
+    mas = mas1 + mas2
+    mas3 = sorted(mas, reverse=True, key=lambda x: x[10])
+    
+    filename = "space/proba.shp"
+    track_shape = shapefile.Writer(filename, shapefile.POINT)
 
-    create_orbital_track_for_f_doplera (tle_1, tle_2, dt_start, dt_end, delta, pos_t, Lam_f=90)
+    # Добавляем поля - идентификатор, время, широту и долготу
+    # N - целочисленный тип, C - строка, F - вещественное число
+    # Для времени придётся использовать строку, т.к. нет поддержки формата "дата и время"
+    track_shape.field("ID", "N", 40)
+    track_shape.field("TIME", "C", 40)
+    track_shape.field("LON", "F", 40)
+    track_shape.field("LAT", "F", 40)
+    track_shape.field("R_s", "F", 40)
+    track_shape.field("R_t", "F", 40)
+    track_shape.field("R_n", "F", 40)
+    track_shape.field("ϒ", "F", 40, 5)
+    track_shape.field("φ", "F", 40, 5)
+    track_shape.field("λ", "F", 40, 5)
+    track_shape.field("f", "F", 40, 5)
+    
+    track_shape.point(lon_s, lat_s)
+    track_shape.record(i, dt, lon_s, lat_s, R_s, R_t, R_n, f_grad)
+
+    try:
+        # Создаем файл .prj с тем же именем, что и выходной .shp
+        prj = open("%s.prj" % filename.replace(".shp", ""), "w")
+        # Создаем переменную с описанием EPSG:4326 (WGS84)
+        wgs84_wkt = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]]'
+        # Записываем её в файл .prj
+        prj.write(wgs84_wkt)
+        # И закрываем его
+        prj.close()
+        # Функцией save также сохраняем и сам шейп.
+        track_shape.save(filename)
+    except:
+        # Вдруг нет прав на запись или вроде того...
+        print("Unable to save shapefile")
+        return
+    print (len(mas3))
+    print (f"{mas3}\n")
 
 
 if __name__ == "__main__":
