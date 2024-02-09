@@ -54,7 +54,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
 
     while dt < dt_end:
         # Считаем положение спутника в инерциальной СК
-        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position (tle_1, tle_2, dt)
+        X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
         Rs = X_s, Y_s, Z_s
         Vs = Vx_s, Vy_s, Vz_s
 
@@ -82,7 +82,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
 #        if (ugol < 0):
 #            ugol = 180+ugol
 #        ugol = ugol - 90
-        Fd = calc_f_doplera (Lam_f, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        Fd = calc_f_doplera(Lam_f, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
         #print (f"{Fd:.5f}")
  #       print (f"{Fd}")
   #          print (R_0)

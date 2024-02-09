@@ -16,13 +16,13 @@ def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, pos_t, Lam_f):
     # Полоса рабочих частот, МГц 3100-3300
     F_zi = 3200 #МГц
     Lam= 0.299792458/F_zi #Получаем длину волны в метрах
-    print(f"{Lam:.6f}")
+#    print(f"{Lam:.6f}")
 
     dt = dt_start
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
-    mas = []
+ 
     # Считаем положение спутника в инерциальной СК
     X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
     Rs = X_s, Y_s, Z_s
@@ -50,8 +50,8 @@ def create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, pos_t, Lam_f):
 
 def _test():
 
-    tle_1 = '1 25544U 98067A   23279.68733398  .00019024  00000+0  34211-3 0  9999'
-    tle_2 = '2 25544  51.6400 136.2543 0005380  78.9726  28.2342 15.49856251419086'
+    tle_1 = '1 56756U 23074A   24029.75507617  .00007830  00000+0  37007-3 0  9997'
+    tle_2 = '2 56756  97.4361 225.8387 0001732  73.7060 286.4365 15.19669782 37640'
 
      
     #Задаем начальное время
@@ -59,10 +59,10 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=0,
+        seconds=30,
         microseconds=0,
         milliseconds=0,
-        minutes=2,
+        minutes=0,
         hours=0,
         weeks=0
     )
@@ -97,17 +97,38 @@ def _test():
 
 
     #Координаты объекта в геодезической СК (lat,lon, alt)
-    pos_t_1 = 59.95, 30.316667, 12
-    pos_t_2 = 61.796111, 34.349167, 112
+    pos_t = 59.95, 30.316667, 12
+ #   pos_t_2 = 61.796111, 34.349167, 112
     
     i = 0
-
+ #   Lam_f = 88
+    mas =  []
+    mas_2 = []
     while dt_start < dt_end:
-        date, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd = create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, dt_end, delta, pos_t_1, Lam_f=90)
-        track_shape.point(lon_s, lat_s)
-        track_shape.record(i, date, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd)
+ #       print(dt_start)
+        for Lam_f in range(88,93):
+ #           print(Lam_f)
+            mas.append(create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, pos_t, Lam_f))
+ #           if Fd_1 > abs(Fd_2):
+ #               Fd = Fd_2
+ #               Lam_f_0 = Lam_f_2
+ #           else:
+ #               Fd = Fd_1
+ #               Lam_f_0 = Lam_f_1
+            Lam_f += 1
+        mas.sort(key=lambda x:x[9])
+        mas_2.append(mas[0])
+        track_shape.point(mas[0][1], mas[0][2])
+        track_shape.record(i, mas[0][0], mas[0][1], mas[0][2], mas[0][3], mas[0][4], mas[0][5], mas[0][6], mas[0][7], mas[1][8], mas[0][9])
+        mas =  []
+        
+ #       mas_3.append(mas_2[0])
+ #       mas = []
         i += 1
+  #      print (i)
         dt_start += delta
+    #sorted(maskey=lambda x: x[1])
+#    print (mas_2)
 
 
     try:
@@ -125,8 +146,6 @@ def _test():
         # Вдруг нет прав на запись или вроде того...
         print("Unable to save shapefile")
         return
-    print (len(mas3))
-    print (f"{mas3}\n")
 
 
 if __name__ == "__main__":
