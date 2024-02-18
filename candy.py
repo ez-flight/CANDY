@@ -81,33 +81,31 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
-
-        #Расчет угловой скорости вращения земли для подспутниковой точки
-        Wp = 1674 * math.cos(math.radians(lat_s))
-        ass2.append(Wp)
- #       Wp = We * math.cos(lat_t)* Re
-        # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
-        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        ass1.append(Fd)
+#        if R_0 < 960:
+        if  y_grad > 24 and y_grad < 55 and R_0 < R_e:
+#            print (f"{y_grad:.0f} {ay:.0f}")
+            #Расчет угловой скорости вращения земли для подспутниковой точки
+            Wp = 1674 * math.cos(math.radians(lat_s))
+            ass1.append(Wp)
+     #       Wp = We * math.cos(lat_t)* Re
+           # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
+            Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+            ass2.append(Fd)
 #        print (f"Частота доплера - {Fd:.0f}, скорость {Wp}")
  #       print (f"{Fd}")
   #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
-        track_shape.point(lon_s, lat_s)
+            track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, a, Fd)
+            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, a, Fd)
             # Не забываем про счётчики
  #       print(ugol)
         i += 1
         dt += delta
-    print (len(ass1))
-    print (len(ass2))
-    print (ass2)
-    plt.plot(ass1, ass2)
-    plt.show()
-    print (i)
-    return track_shape
+
+ #   print (i)
+    return track_shape, ass1, ass2
    
 
 
@@ -144,7 +142,7 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=1,
+        seconds=10,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -154,17 +152,33 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=0,
+        days=16,
 #        seconds=5689,
-        seconds=10,
+        seconds=0,
         microseconds=0,
         milliseconds=0,
         minutes=0,
         hours=0,
         weeks=0
     )
-
-    track_shape = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a)
+    a = 88
+    j = 0
+    ass1 = []
+    ass2 = []
+    while  a <= 92:
+        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a)
+        ass1.append(acc)
+        ass2.append(abb)
+        a += 1
+  
+    
+    plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
+    plt.xlabel('скорость подспутниковой точки')
+    plt.ylabel('Fd,Гц')
+    plt.plot(ass1[0], ass2[0], 'ro')
+    plt.plot(ass1[2], ass2[2], 'bo')
+    plt.plot(ass1[4], ass2[4], 'yo')
+    plt.show()
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
