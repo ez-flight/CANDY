@@ -155,8 +155,8 @@ def _test():
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
         days=0,
-        seconds=5689,
-#        seconds=10,
+#        seconds=5689,
+        seconds=10,
         microseconds=0,
         milliseconds=0,
         minutes=0,
