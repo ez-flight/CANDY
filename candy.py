@@ -1,6 +1,8 @@
 import math
 from datetime import date, datetime, timedelta
 
+# Библиотека графиков
+import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
 # Ключевой класс библиотеки pyorbital
@@ -32,26 +34,27 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, Lam_f):
-     
-#    Fd=0.0
-    #Кондор, длина волны 10 см, частота   3200
-    # Полоса рабочих частот, МГц 3100-3300
-#    F_zi = 300 #МГц
-#    Lam= 299.792458/F_zi #Получаем длину волны в метрах
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a):
+ 
+    # Угловая скорость вращения земли
+    We = 7.2292115E-5
+    # Радиус земли
+    Re = 6378.140
+    # Длина волны
     Lam=0.000096
-#    F_zi 
-    print (299.792458/Lam)
-    #Координаты объекта в геодезической СК
+    # Координаты объекта в геодезической СК
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
     alt_t = 12
-
+    # Время начала расчетов
     dt = dt_start
+
+    ass1 = []
+    ass2 = []
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
-
+    # Цикл расчета в заданном интервале времени
     while dt < dt_end:
         # Считаем положение спутника в инерциальной СК
         X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
@@ -72,30 +75,37 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
         #Расчет двух углов
+        #Верхний (Угол Визирования)
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
+        #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
- 
-        # Расчет угла ведется в файле calc_F_L.py резкльтат в градусах
-#        ugol = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-#        if (ugol < 0):
-#            ugol = 180+ugol
-#        ugol = ugol - 90
-        Fd = calc_f_doplera(Lam_f, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        #print (f"{Fd:.5f}")
+
+        #Расчет угловой скорости вращения земли для подспутниковой точки
+        Wp = 1674 * math.cos(math.radians(lat_s))
+        ass2.append(Wp)
+ #       Wp = We * math.cos(lat_t)* Re
+        # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
+        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        ass1.append(Fd)
+#        print (f"Частота доплера - {Fd:.0f}, скорость {Wp}")
  #       print (f"{Fd}")
   #          print (R_0)
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
         track_shape.point(lon_s, lat_s)
             # и атрибуты
-        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, Lam_f, Fd)
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, a, Fd)
             # Не забываем про счётчики
  #       print(ugol)
         i += 1
         dt += delta
-
+    print (len(ass1))
+    print (len(ass2))
+    print (ass2)
+    plt.plot(ass1, ass2)
+    plt.show()
     print (i)
     return track_shape
    
@@ -107,7 +117,7 @@ def _test():
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
     #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
-
+    a = 90
     filename = "space/" + s_name + ".shp"
     print (filename)
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
@@ -134,16 +144,7 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=30,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0
-    )
-    delta_2 = timedelta(
-        days=0,
-        seconds=30,
+        seconds=1,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -154,7 +155,8 @@ def _test():
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
         days=0,
-        seconds=5689,
+#        seconds=5689,
+        seconds=10,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -162,15 +164,12 @@ def _test():
         weeks=0
     )
 
-    ugol = 89
-    while ugol < 92:
-       track_shape = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, ugol)
+    track_shape = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a)
 
-        # Вне цикла нам осталось записать созданный шейп-файл на диск.
+    # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
     # можно заодно создать файл .prj с нужным описанием
-       ugol += 1
-       
+           
        
     try:
         # Создаем файл .prj с тем же именем, что и выходной .shp
