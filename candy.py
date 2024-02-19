@@ -34,7 +34,7 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a):
  
     # Угловая скорость вращения земли
     We = 7.2292115E-5
@@ -43,9 +43,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
     # Длина волны
     Lam=0.000096
     # Координаты объекта в геодезической СК
-    lat_t = 59.95  #55.75583
-    lon_t = 30.316667 #37.6173
-    alt_t = 12
+    lat_t, lon_t, alt_t = pos_t
+
     # Время начала расчетов
     dt = dt_start
 
@@ -81,12 +80,14 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
-#        if R_0 < 960:
-        if  y_grad > 24 and y_grad < 55 and R_0 < R_e:
+#       y_grad > 24 and 
+        if y_grad < 55 and R_0 < R_e:
 #            print (f"{y_grad:.0f} {ay:.0f}")
             #Расчет угловой скорости вращения земли для подспутниковой точки
             Wp = 1674 * math.cos(math.radians(lat_s))
             ass1.append(Wp)
+            Wt = 1674 * math.cos(math.radians(lat_t))
+            print (Wt) 
      #       Wp = We * math.cos(lat_t)* Re
            # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
             Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
@@ -118,6 +119,11 @@ def _test():
     a = 90
     filename = "space/" + s_name + ".shp"
     print (filename)
+
+    lat_t = 59.95  #55.75583
+    lon_t = 30.316667 #37.6173
+    alt_t = 12
+    pos_t = [lat_t, lon_t, alt_t]
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
     track_shape = shapefile.Writer(filename, shapefile.POINT)
 
@@ -152,7 +158,7 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=16,
+        days=10,
 #        seconds=5689,
         seconds=0,
         microseconds=0,
@@ -165,11 +171,11 @@ def _test():
     j = 0
     ass1 = []
     ass2 = []
-    while  a <= 92:
-        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a)
-        ass1.append(acc)
-        ass2.append(abb)
-        a += 1
+#    while  a <= 92:
+#        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
+#        ass1.append(acc)
+#        ass2.append(abb)
+#        a += 1
   
     
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')

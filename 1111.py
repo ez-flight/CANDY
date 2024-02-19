@@ -103,7 +103,7 @@ def _test():
     i = 0
     j = 0
  #   Lam_f = 88
-    Fd_2 [][] = 0
+    Fd_2 = 0
     mas =  []
     mas_2 = []
     while dt_start < dt_end:
@@ -128,6 +128,7 @@ def _test():
  #       mas_3.append(mas_2[0])
  #       mas = []
         i += 1
+        j += 1
   #      print (i)
         dt_start += delta
     #sorted(maskey=lambda x: x[1])
