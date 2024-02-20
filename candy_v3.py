@@ -34,7 +34,7 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt, a):
  
     # Угловая скорость вращения земли
     We = 7.2292115E-5
@@ -43,6 +43,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
     # Длина волны
     Lam=0.000096
     # Координаты объекта в геодезической СК
+    lat_t, lon_t, alt_t = pos_gt
     lat_t = 59.95  #55.75583
     lon_t = 30.316667 #37.6173
     alt_t = 12
@@ -65,8 +66,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
 
         #Персчитываем положение объекта из геодезической в инерциальную СК  на текущее время с расчетом компонентов скорости точки на земле
-        pos_t, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
-        X_t, Y_t, Z_t = pos_t
+        pos_it, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
+        X_t, Y_t, Z_t = pos_it
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
@@ -115,7 +116,15 @@ def _test():
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
     #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
-    a = 90
+        
+    # Координаты объекта в геодезической СК
+
+    lat_t = 59.95  #55.75583
+    lon_t = 30.316667 #37.6173
+    alt_t = 12
+    pos_gt_1 = lat_t, lon_t, alt_t
+    pos_gt_2 = [55.75583, 30.316667, 140]
+
     filename = "space/" + s_name + ".shp"
     print (filename)
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
@@ -161,23 +170,24 @@ def _test():
         hours=0,
         weeks=0
     )
-    a = 88
-    j = 0
-    ass1 = []
-    Fd_m = []
-    while  a <= 92:
-        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape, a)
-        ass1.append(acc)
-        Fd_m.append(abb)
-        a += 1
-  
-    
+    a = 90
+
+#    while  a <= 92:
+#        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt, a)
+#        ass1.append(acc)
+#        Fd_m.append(abb)
+#        a += 1
+    track_shape, acc1, abb1 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_1, a)
+
+
+    track_shape1, acc2, abb2 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_2, a)
+
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
     plt.ylabel('Fd,Гц')
-    plt.plot(ass1[0], Fd_m[0], 'ro')
-    plt.plot(ass1[2], Fd_m[2], 'bo')
-    plt.plot(ass1[4], Fd_m[4], 'yo')
+    plt.plot(acc1, abb1, 'ro')
+    plt.plot(acc2, abb2, 'bo')
+#    plt.plot(ass1[4], Fd_m[4], 'yo')
     plt.show()
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
