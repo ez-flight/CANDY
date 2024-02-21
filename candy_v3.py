@@ -44,9 +44,6 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
     Lam=0.000096
     # Координаты объекта в геодезической СК
     lat_t, lon_t, alt_t = pos_gt
-    lat_t = 59.95  #55.75583
-    lon_t = 30.316667 #37.6173
-    alt_t = 12
     # Время начала расчетов
     dt = dt_start
 
@@ -82,7 +79,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
-#        if R_0 < 960:
+ #       if R_0 < R_e:
         if  y_grad > 24 and y_grad < 55 and R_0 < R_e:
 #            print (f"{y_grad:.0f} {ay:.0f}")
             #Расчет угловой скорости вращения земли для подспутниковой точки
@@ -123,7 +120,9 @@ def _test():
     lon_t = 30.316667 #37.6173
     alt_t = 12
     pos_gt_1 = lat_t, lon_t, alt_t
-    pos_gt_2 = [55.75583, 30.316667, 140]
+    pos_gt_2 = (55.75583, 37.6173, 140)
+#    print (pos_gt_1)
+ #   print (pos_gt_2)    
 
     filename = "space/" + s_name + ".shp"
     print (filename)
@@ -177,17 +176,18 @@ def _test():
 #        ass1.append(acc)
 #        Fd_m.append(abb)
 #        a += 1
-    track_shape, acc1, abb1 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_1, a)
+    track_shape, Wp_m_1, Fd_m_1 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_1, a)
+ #   track_shape, Wp_m_2, Fd_m_2 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_2, a)
 
-
-    track_shape1, acc2, abb2 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_2, a)
+#    print (Fd_m_1)
+#    print (Fd_m_2)   
 
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
     plt.ylabel('Fd,Гц')
-    plt.plot(acc1, abb1, 'ro')
-    plt.plot(acc2, abb2, 'bo')
-#    plt.plot(ass1[4], Fd_m[4], 'yo')
+    plt.plot(Wp_m_1, Fd_m_1, 'ro')
+#    plt.plot(Wp_m_2, Fd_m_2, 'bo')
+ #   plt.plot(ass1[4], Fd_m[4], 'yo')
     plt.show()
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
