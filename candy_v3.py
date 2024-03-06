@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+import xlwt
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 
@@ -109,6 +110,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
 
 def _test():
 
+    book = xlwt.Workbook(encoding="utf-8")
+    sheet1 = book.add_sheet("Sheet1")
+
     #25544 37849
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
@@ -160,9 +164,9 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=16,
-#        seconds=5689,
-        seconds=0,
+        days=0,
+        seconds=5689,
+#        seconds=0,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -181,6 +185,16 @@ def _test():
 
 #    print (Fd_m_1)
 #    print (Fd_m_2)   
+    cols = ["A", "B"]
+
+    for num in range(len(Fd_m_1)):
+        row = sheet1.row(num)
+        for index, col in enumerate(cols):
+            value = Fd_m_1[index]
+            row.write(index, value)
+
+    # Save the result
+    book.save("space/test.xls")
 
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
@@ -189,6 +203,7 @@ def _test():
 #    plt.plot(Wp_m_2, Fd_m_2, 'bo')
  #   plt.plot(ass1[4], Fd_m[4], 'yo')
     plt.show()
+
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
