@@ -50,6 +50,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
 
     Wp_m = []
     Fd_m = []
+    lon_s_m = []
+    lat_s_m = []
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -90,6 +92,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
            # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
             Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
             Fd_m.append(Fd)
+            lon_s_m.append(lon_s)
+            lat_s_m.append(lat_s)
 #        print (f"Частота доплера - {Fd:.0f}, скорость {Wp}")
  #       print (f"{Fd}")
   #          print (R_0)
@@ -104,14 +108,13 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta
         dt += delta
 
  #   print (i)
-    return track_shape, Wp_m, Fd_m
+    return track_shape, lon_s_m, lat_s_m, Wp_m, Fd_m
    
 
 
 def _test():
 
     book = xlwt.Workbook(encoding="utf-8")
-    sheet1 = book.add_sheet("Sheet1")
 
     #25544 37849
     # 56756 Кондор ФКА
@@ -127,8 +130,13 @@ def _test():
     pos_gt_2 = (55.75583, 37.6173, 140)
 #    print (pos_gt_1)
  #   print (pos_gt_2)    
+     
+    a = 95
 
-    filename = "space/" + s_name + ".shp"
+    filename = "space/" + s_name
+    filename1 = "space/" + str(a) + "_" + s_name
+    sheet1 = book.add_sheet(str(a))
+
     print (filename)
     # Создаём экземпляр класса Writer для создания шейп-файла, указываем тип геометрии
     track_shape = shapefile.Writer(filename, shapefile.POINT)
@@ -154,7 +162,7 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=10,
+        seconds=1,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -164,45 +172,46 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=0,
-        seconds=5689,
-#        seconds=0,
+        days=16,
+ #       seconds=5689,
+        seconds=0,
         microseconds=0,
         milliseconds=0,
         minutes=0,
         hours=0,
         weeks=0
     )
-    a = 90
 
 #    while  a <= 92:
 #        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt, a)
 #        ass1.append(acc)
 #        Fd_m.append(abb)
 #        a += 1
-    track_shape, Wp_m_1, Fd_m_1 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_1, a)
+    track_shape, lon_s_m, lat_s_m, Wp_m_1, Fd_m_1 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_1, a)
  #   track_shape, Wp_m_2, Fd_m_2 = create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt_2, a)
-
 #    print (Fd_m_1)
 #    print (Fd_m_2)   
     cols = ["A", "B"]
-
     for num in range(len(Fd_m_1)):
         row = sheet1.row(num)
-        for index, col in enumerate(cols):
-            value = Fd_m_1[index]
-            row.write(index, value)
+        row.write(0, lon_s_m[num])
+        row.write(1, lat_s_m[num])
+        row.write(2, Fd_m_1[num])
+        row.write(3, Wp_m_1[num])
+ #       for index, col in enumerate(cols):
+ #           value = Fd_m_1[index]
+ #           row.write(index, value)
 
     # Save the result
-    book.save("space/test.xls")
+    book.save(filename1 + ".xls")
 
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
     plt.ylabel('Fd,Гц')
-    plt.plot(Wp_m_1, Fd_m_1, 'ro')
+    plt.plot(Fd_m_1, Wp_m_1, 'ro')
 #    plt.plot(Wp_m_2, Fd_m_2, 'bo')
  #   plt.plot(ass1[4], Fd_m[4], 'yo')
-    plt.show()
+#    plt.show()
 
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
@@ -220,7 +229,7 @@ def _test():
         # И закрываем его
         prj.close()
         # Функцией save также сохраняем и сам шейп.
-        track_shape.save(filename)
+        track_shape.save(filename + ".shp")
     except:
         # Вдруг нет прав на запись или вроде того...
         print("Unable to save shapefile")
