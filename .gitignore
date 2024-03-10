@@ -26,7 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-/space
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -153,3 +153,7 @@ media/
 node_modules
 
 active.txt
+
+# Мои рабочие папки
+/space
+/DATA
