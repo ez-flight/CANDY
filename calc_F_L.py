@@ -36,8 +36,8 @@ def calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
 
     Lam_f = Lam_f*180./math.pi
 
-#    if (Lam_f < 0):
-#        Lam_f = 180+Lam_f
+    if (Lam_f < 0):
+        Lam_f = 180+Lam_f
 
     return Lam_f
 
