@@ -35,7 +35,7 @@ for k in range(len_list):
     Wp_m = []
     Fd_m = []
 
-    for i in range(0, 6441):
+    for i in range(0, 1291):
         for j in range(0, 12):
             if j == 0:
                 i_m.append(worksheet.cell_value(i, j))

@@ -147,7 +147,7 @@ def _test():
 #    print (pos_gt_1)
  #   print (pos_gt_2)    
      
-    a = 88
+    a = 88.0
 
     filename = "space/" + s_name
 #    filename1 = "space1/" + str(a) + "_" + s_name
@@ -178,7 +178,7 @@ def _test():
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
-        seconds=1,
+        seconds=5,
         microseconds=0,
         milliseconds=0,
         minutes=0,
@@ -230,7 +230,7 @@ def _test():
 
         # Save the result
 
-        a += 0.5
+        a += 0.1
     book.save(filename + ".xls")
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
