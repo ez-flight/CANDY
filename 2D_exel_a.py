@@ -68,7 +68,7 @@ for k in range(len_list):
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от долготы ИСЗ')
     plt.xlabel('Долгота')
     plt.ylabel('Fd,Гц')
-    plt.plot( Wp_m, a_m, 'go', markersize=1)
+    plt.plot( ay_grad_m, a_m, 'go', markersize=1)
     camera.snap()
 #    plt.plot(Wp_m_2, Fd_m_2, 'bo')
  #   plt.plot(ass1[4], Fd_m[4], 'yo')
