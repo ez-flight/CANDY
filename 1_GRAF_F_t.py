@@ -1,7 +1,7 @@
 import math
 from datetime import date, datetime, timedelta
 
-# Библиотека графиков
+# Не забываем импортировать matplotlib.pyplot
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
@@ -48,8 +48,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
     # Время начала расчетов
     dt = dt_start
 
-    ass1 = []
-    ass2 = []
+    time_mass = []
+    F_mass = []
+    R_0_mass = []
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -80,33 +81,28 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
-#       y_grad > 24 and 
-        if y_grad < 55 and R_0 < R_e:
-#            print (f"{y_grad:.0f} {ay:.0f}")
-            #Расчет угловой скорости вращения земли для подспутниковой точки
-            Wp = 1674 * math.cos(math.radians(lat_s))
-            ass1.append(Wp)
-            Wt = 1674 * math.cos(math.radians(lat_t))
-            print (Wt) 
-     #       Wp = We * math.cos(lat_t)* Re
-           # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
-            Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-            ass2.append(Fd)
-#        print (f"Частота доплера - {Fd:.0f}, скорость {Wp}")
- #       print (f"{Fd}")
-  #          print (R_0)
-            # Создаём в шейп-файле новый объект
-            # Определеяем геометрию
-            track_shape.point(lon_s, lat_s)
-            # и атрибуты
-            track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, a, Fd)
-            # Не забываем про счётчики
- #       print(ugol)
+# 
+        date_delta = dt - dt_start
+        time_mass.append(date_delta.total_seconds())
+
+        R_0_mass.append(R_0)
+
+        # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
+        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        F_mass.append(Fd)
+
+        # Создаём в шейп-файле новый объект
+        # Определеяем геометрию
+        track_shape.point(lon_s, lat_s)
+        # и атрибуты
+        track_shape.record(i, dt, lon_s, lat_s, R_s, R_e, R_0, y_grad, ay_grad, a, Fd)
+        # Не забываем про счётчики
+ #      print(ugol)
         i += 1
         dt += delta
 
  #   print (i)
-    return track_shape, ass1, ass2
+    return track_shape, time_mass, F_mass, R_0_mass
    
 
 
@@ -115,9 +111,8 @@ def _test():
     #25544 37849
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
-    #s_name, tle_1, tle_2 = read_tle_base_internet(37849)
-    a = 90
-    filename = "space/" + s_name + ".shp"
+    a = 88
+    filename = "1_GRAF/1_GRAF_F_t" + s_name + ".shp"
     print (filename)
 
     lat_t = 59.95  #55.75583
@@ -144,7 +139,7 @@ def _test():
 
      
     #Задаем начальное время
-    dt_start = datetime(2024, 2, 21, 3, 0, 0)
+    dt_start = datetime(2024, 2, 21, 3, 21, 30)
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
@@ -158,32 +153,42 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
-#        seconds=5689,
-        seconds=0,
+        days=0,
+        seconds=5689,
+#        seconds=0,
         microseconds=0,
         milliseconds=0,
         minutes=0,
         hours=0,
         weeks=0
     )
-    a = 88
-    j = 0
-    ass1 = []
-    ass2 = []
-    while  a <= 92:
-        track_shape, acc, abb = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
-        ass1.append(acc)
-        ass2.append(abb)
-        a += 1
-  
+
+    time_mass = []
+    Fd_mass = []
+    R_0_mass = []
     
-    plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
-    plt.xlabel('скорость подспутниковой точки')
-    plt.ylabel('Fd,Гц')
-    plt.plot(ass1[0], ass2[0], 'ro')
-    plt.plot(ass1[2], ass2[2], 'bo')
-    plt.plot(ass1[4], ass2[4], 'yo')
+    while  a <= 92:
+        track_shape, time_m, Fd_m, R_0_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
+        time_mass.append(time_m)
+        Fd_mass.append(Fd_m)
+        R_0_mass.append(R_0_m)
+        a += 2
+    # Создали объекты окна fig
+    fig, (gr_1, gr_2) = plt.subplots(nrows=2)
+    # Задали расположение графиков в 2 строки
+    gr_1.plot(time_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
+    gr_1.plot(time_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
+    gr_1.plot(time_mass[2], Fd_mass[2], 'y', label="Угол $λ$ = 92")
+    gr_2.plot(time_mass[0], R_0_mass[0], 'r', label="Угол $λ$ = 88")
+    # Подписываем оси, пишем заголовок
+    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
+    gr_1.set_ylabel('Fd (Гц)')
+    gr_2.set_ylabel('R0 (м)')
+    gr_2.set_xlabel('Время (сек)')
+    gr_1.legend()
+    # Отображаем сетку
+    gr_1.grid(True)
+    gr_2.grid(True)
     plt.show()
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.

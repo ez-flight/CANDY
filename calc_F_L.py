@@ -3,7 +3,6 @@ from datetime import date, datetime, timedelta
 
 
 def calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
-
     We = 7.2292115E-5
 
     X_s, Y_s, Z_s = Rs
@@ -31,13 +30,16 @@ def calc_lamda (Fd, Lam, ay, Rs, Vs, R_0, R_e, R_s, V_s):
     N1 = R_e*math.cos(ay)*((-Vx_s-We*Y_s)*nn11 - (Vy_s-We*X_s)*nn21 - Vz_s*nn31)
     N2 = R_e*math.cos(ay)*((-Vx_s-We*Y_s)*nn12 - (Vy_s-We*X_s)*nn22 - Vz_s*nn32)
     N0 = R_e*math.sin(ay)*((-Vx_s-We*Y_s)*nn13 - (Vy_s-We*X_s)*nn23 - Vz_s*nn33) + Lam*Fd*R_0/2 + X_s*Vx_s+Y_s*Vy_s+Z_s*Vz_s
-
-    Lam_f = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
+    try:
+        Lam_f = math.asin(-N0/(math.sqrt(N1**2+N2**2)))-math.atan(N1/N2)
+    except ValueError:
+        Lam_f = 1.571
+        print("Точка противоположная СПБ наверное")
 
     Lam_f = Lam_f*180./math.pi
 
     if (Lam_f < 0):
-        Lam_f = 180+Lam_f
+        Lam_f = 180 + Lam_f
 
     return Lam_f
 
