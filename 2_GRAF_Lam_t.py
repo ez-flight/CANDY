@@ -60,9 +60,11 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s = get_position(tle_1, tle_2, dt)
         Rs = X_s, Y_s, Z_s
         Vs = Vx_s, Vy_s, Vz_s
-
         # Считаем положение спутника в геодезической СК
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
+        #print (lat_s)
+        if lat_s < 0.3 and lat_s > -0.3:
+            print(dt)
 
         #Персчитываем положение объекта из геодезической в инерциальную СК  на текущее время с расчетом компонентов скорости точки на земле
         pos_t, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
@@ -139,7 +141,7 @@ def _test():
 
      
     #Задаем начальное время
-    dt_start = datetime(2024, 2, 21, 17, 34, 40)
+    dt_start = datetime(2024, 2, 21, 19, 57, 00)
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
@@ -181,7 +183,7 @@ def _test():
     gr_1.plot(time_mass[2], a_mass[2], 'y', label="Частота $F$ = 1000 Гц")
     gr_2.plot(time_mass[0], R_0_mass[0], 'g')
     # Подписываем оси, пишем заголовок
-    gr_1.set_title('Зависимость угла от доплеровского смещение частоты отраженного сигнала')
+#    gr_1.set_title('Зависимость угла от доплеровского смещение частоты отраженного сигнала')
     gr_1.set_ylabel('λ (Градусы)')
     gr_2.set_ylabel('R0 (м)')
     gr_2.set_xlabel('Время (сек)')

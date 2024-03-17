@@ -139,7 +139,8 @@ def _test():
 
      
     #Задаем начальное время
-    dt_start = datetime(2024, 2, 21, 3, 21, 30)
+#    dt_start = datetime(2024, 2, 21, 3, 21, 30)
+    dt_start = datetime(2024, 2, 21, 19, 57, 00)
     #Задаем шаг по времени для прогноза
     delta = timedelta(
         days=0,
@@ -179,9 +180,9 @@ def _test():
     gr_1.plot(time_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
     gr_1.plot(time_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
     gr_1.plot(time_mass[2], Fd_mass[2], 'y', label="Угол $λ$ = 92")
-    gr_2.plot(time_mass[0], R_0_mass[0], 'r', label="Угол $λ$ = 88")
+    gr_2.plot(time_mass[0], R_0_mass[0], 'g', label="Угол $λ$ = 88")
     # Подписываем оси, пишем заголовок
-    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
+#    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
     gr_1.set_ylabel('Fd (Гц)')
     gr_2.set_ylabel('R0 (м)')
     gr_2.set_xlabel('Время (сек)')
