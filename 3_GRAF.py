@@ -101,7 +101,7 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=1,
+        days=16,
 #        seconds=5689,
         seconds=0,
         microseconds=0,
@@ -122,6 +122,10 @@ def _test():
     delta_data =[]
     
     vitok = 0
+    flag = 0
+
+    ii = 0
+    jj = 0
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
     j = 0
@@ -168,15 +172,23 @@ def _test():
             chislo = i//5689
             chislo +=1
             if vitok != chislo:
-                if vitok != 0:
-                    dlitelnost = vitok, date_n1, date_n2
+                if vitok != 0 and flag != 1:
+                    vremya_kontakta = date_n2 - date_n1
+                    dlitelnost = vitok, date_n1, date_n2 , vremya_kontakta
                     t_semki.append(dlitelnost)
+                    
                 vitok = chislo
                 date_n1 = dt
                 date_n2 = 0
+                flag = 0
             else:
-                date_n2 = dt
- #            chislo_m.append(chislo)
+                if date_n2 == 0 or dt == date_n2 + timedelta(seconds=1):
+                    date_n2 = dt
+#                    flag = 0
+                else:
+                    print ("Da!")
+                    vitok = 0
+                    flag = 1
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
             track_shape.point(lon_s, lat_s)
@@ -185,23 +197,34 @@ def _test():
             # Не забываем про счётчики
         i += 1
         dt += delta
-    
+    vremya_kontakta = date_n2 - date_n1
+    dlitelnost = vitok, date_n1, date_n2 , vremya_kontakta
+    t_semki.append(dlitelnost)
 #    print(f"{len(t_semki)}\n")
-    print(t_semki)
+    print(len(t_semki))
 
 #    print(f"Виток {vitok} Время начала {date_n1} Время конца {date_n2} длительность {date_n2 - date_n1}")
     kol = len(delta_data)
     data = delta_data[kol-1] - delta_data[0]
 #    print(f"{delta_data[kol-1]//5689}\n")
 #    if kol == data.total_seconds():
-    
+    for ii in range(len(t_semki)):
+        row = sheet1.row(ii)
+        vitok, date_n1, date_n2 , vremya_kontakta = t_semki[ii]
+        row.write(0, vitok)
+        row.write(1, date_n1)
+        row.write(2, date_n2)
+        print(vremya_kontakta.total_seconds())
+        row.write(3, vremya_kontakta.total_seconds())
+#            row.write(jj, time_mass[jj])
+
 #    print(f"количество секунд {kol} {data.total_seconds()}\n")
-    for num in range(len(Fd_m)):
-        row = sheet1.row(num)
-        row.write(0, time_mass[num])
-        row.write(1, lon_s_m[num])
-        row.write(2, lat_s_m[num])
-        row.write(3, Fd_m[num])
+#    for num in range(len(Fd_m)):
+#        row = sheet1.row(num)
+#        row.write(0, time_mass[num])
+#        row.write(1, lon_s_m[num])
+#        row.write(2, lat_s_m[num])
+#        row.write(3, Fd_m[num])
  #       row.write(4, chislo_m[num])
  #       for index, col in enumerate(cols):
  #           value = Fd_m_1[index]
