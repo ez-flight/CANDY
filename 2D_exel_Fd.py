@@ -8,7 +8,7 @@ from celluloid import Camera
 fig = plt.figure()
 camera = Camera(fig)
 name = "KONDOR FKA NO.1"
-filename = "DATA/" + name
+filename = "DATA/" + name + "_Fd"
 
 # Open a workbook 
 workbook = xlrd.open_workbook(filename + ".xls")

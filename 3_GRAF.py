@@ -35,14 +35,6 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, dt_start, dt_end, delta, track_shape,pos_gt, a):
-
-
-
-    return track_shape, time_mass, lon_s_m, lat_s_m, Fd_m, chislo_m
-
-
-
 def _test():
 
     book = xlwt.Workbook(encoding="utf-8")
@@ -122,7 +114,7 @@ def _test():
     delta_data =[]
     
     vitok = 0
-    flag = 0
+    flag = {}
 
     ii = 0
     jj = 0
@@ -170,9 +162,10 @@ def _test():
             delta_data.append(dt)
 
             chislo = i//5689
-            chislo +=1
+            chislo += 1
             if vitok != chislo:
-                if vitok != 0 and flag != 1:
+                if vitok != 0 and not vitok in flag.keys():
+                    print(vitok)
                     vremya_kontakta = date_n2 - date_n1
                     dlitelnost = vitok, date_n1, date_n2 , vremya_kontakta
                     t_semki.append(dlitelnost)
@@ -180,15 +173,12 @@ def _test():
                 vitok = chislo
                 date_n1 = dt
                 date_n2 = 0
-                flag = 0
             else:
                 if date_n2 == 0 or dt == date_n2 + timedelta(seconds=1):
                     date_n2 = dt
-#                    flag = 0
                 else:
-                    print ("Da!")
-                    vitok = 0
-                    flag = 1
+                    date_n2 = dt
+                    flag [vitok] = True
             # Создаём в шейп-файле новый объект
             # Определеяем геометрию
             track_shape.point(lon_s, lat_s)
@@ -197,11 +187,12 @@ def _test():
             # Не забываем про счётчики
         i += 1
         dt += delta
-    vremya_kontakta = date_n2 - date_n1
-    dlitelnost = vitok, date_n1, date_n2 , vremya_kontakta
-    t_semki.append(dlitelnost)
+    if not vitok in flag.keys():
+        vremya_kontakta = date_n2 - date_n1
+        dlitelnost = vitok, date_n1, date_n2 , vremya_kontakta
+        t_semki.append(dlitelnost)
 #    print(f"{len(t_semki)}\n")
-    print(len(t_semki))
+    print(flag)
 
 #    print(f"Виток {vitok} Время начала {date_n1} Время конца {date_n2} длительность {date_n2 - date_n1}")
     kol = len(delta_data)
