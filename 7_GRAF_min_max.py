@@ -1,8 +1,4 @@
 # Библиотека графиков
-import matplotlib.pyplot as plt
-import numpy as np
-# Import `xlrd`
-import xlrd
 import math
 from datetime import date, datetime, timedelta
 
@@ -10,6 +6,8 @@ from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+# Import `xlrd`
+import xlrd
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 
@@ -144,7 +142,7 @@ def _test():
 #    print (dt_start)
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
 
-    filename = "9_GRAF/9_GRAF_F_t" + s_name + ".shp"
+    filename = "7_GRAF/7_GRAF_F_t" + s_name + ".shp"
     print (filename)
 
     lat_t = 59.95  #55.75583
