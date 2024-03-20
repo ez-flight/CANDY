@@ -192,7 +192,6 @@ def _test():
         sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
         for jj in range(568):
             print (f"{ii} {jj}")
- #          print(f"{time_mass[ii] [jj]} {Fd_mass[ii] [jj]} { R_0_mass[ii] [jj]} {lon_mass[ii] [jj]} {lat_mass[ii] [jj]}")
             sheet1.write(jj, 0, time_mass[ii] [jj])
             sheet1.write(jj, 1,Fd_mass[ii] [jj])
             sheet1.write(jj, 2,R_0_mass[ii] [jj])

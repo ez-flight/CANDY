@@ -35,7 +35,7 @@ def get_position(tle_1, tle_2, utc_time):
     return X_s, Y_s, Z_s, Vx_s, Vy_s, Vz_s
 
 
-def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a, R_0):
+def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, Fd):
  
     # Угловая скорость вращения земли
     We = 7.2292115E-5
@@ -50,7 +50,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
     dt = dt_start
 
     time_mass = []
-    F_mass = []
+    a_mass = []
     R_0_mass = []
     lat_mass = []
     lon_mass = []
@@ -74,8 +74,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-#        R_0=964.
-#        R_0 = 561.6
+#        R_0=923
+        R_0 = 561.6
 #        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
@@ -94,8 +94,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         R_0_mass.append(R_0)
 
         # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
-        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
-        F_mass.append(Fd)
+        a = calc_lamda(Fd, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        a_mass.append(Fd)
 
         # Создаём в шейп-файле новый объект
         # Определеяем геометрию
@@ -106,11 +106,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
  #      print(ugol)
         i += 1
         dt += delta
-    Fd_min = min(F_mass)
-    Fd_max = max(F_mass)
-#    print(f"{R_0 } {Fd_max} {Fd_min}")
+
  #   print (i)
-    return track_shape, time_mass, F_mass, R_0_mass, lat_mass, lon_mass, Fd_min, Fd_max
+    return track_shape, time_mass, a_mass, R_0_mass, lat_mass, lon_mass
    
 
 
@@ -120,8 +118,8 @@ def _test():
     #25544 37849
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
-    a = 88
-    filename = "8_GRAF/8_GRAF_F_t" + s_name + ".shp"
+    Fd = -1000
+    filename = "2_GRAF/2_GRAF_F_t" + s_name + ".shp"
     print (filename)
 
     lat_t = 59.95  #55.75583
@@ -174,61 +172,43 @@ def _test():
     )
 
     time_mass = []
-    Fd_mass = []
+    a_mass = []
     R_0_mass = []
     lat_mass = []
     lon_mass = []
-    Fd_min_mass = []
-    Fd_max_mass = []
-    dist_mass = []
-    Fd_min_mazz = []
-    Fd_max_mazz = []
-    dist_mazz = []
-    oo = 0
-    while  a <= 88:
-        for kk in range(561,964):
-            track_shape, time_m, Fd_m, R_0_m, lat_m, lon_m, Fd_min, Fd_max = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a, kk)
-            dist_mass.append(kk)
-            Fd_min_mass.append(Fd_min)
-            Fd_max_mass.append(Fd_max)
-        #time_mass.append(time_m)
-#        Fd_mass.append(Fd_m)
-#        R_0_mass.append(R_0_m)
-#        lon_mass.append(lon_m)
-#        lat_mass.append(lat_m)
-        dist_mazz.append(dist_mass)
-        Fd_min_mazz.append(Fd_min_mass)
-        Fd_max_mazz.append(Fd_max_mass)
-        a += 2
-        oo += 1
-    print(Fd_min_mazz)
-#    print(Fd_min_mazz[1])
-#    print(Fd_min_mazz[2])
+    
+    while  Fd <= 1000:
+        track_shape, time_m, a_m, R_0_m, lat_m, lon_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, Fd)
+        time_mass.append(time_m)
+        a_mass.append(a_m)
+        R_0_mass.append(R_0_m)
+        lon_mass.append(lon_m)
+        lat_mass.append(lat_m)
+        
+        Fd += 1000
+
  
-    for ii in range(len(Fd_mass)):
+    for ii in range(len(a_mass)):
         sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
         for jj in range(568):
             print (f"{ii} {jj}")
-            print(f"{time_mass[ii] [jj]} {Fd_mass[ii] [jj]} { R_0_mass[ii] [jj]} {lon_mass[ii] [jj]} {lat_mass[ii] [jj]}")
             sheet1.write(jj, 0, time_mass[ii] [jj])
-            sheet1.write(jj, 1,Fd_mass[ii] [jj])
+            sheet1.write(jj, 1,a_mass[ii] [jj])
             sheet1.write(jj, 2,R_0_mass[ii] [jj])
             sheet1.write(jj, 3,lon_mass[ii] [jj])
             sheet1.write(jj, 4,lat_mass[ii] [jj])
 #    print (f"{ii} {jj}")
         # Save the result
-    book.save("8_GRAF/8_GRAF_F_R_0" + s_name + ".xls")
+    book.save("2_GRAF/2_GRAF_a_t" + s_name + ".xls")
   #  print (a)  
 
     # Создали объекты окна fig
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(dist_mazz[0], Fd_max_mazz[0], 'r', label="Угол $λ$ = 88")
-#    gr_1.plot(dist_mazz[1], Fd_max_mazz[1], 'bo', label="Угол $λ$ = 90")
-#    gr_1.plot(dist_mazz[2], Fd_max_mazz[2],  'yo', label="Угол $λ$ = 92")
-    gr_2.plot(dist_mazz[0], Fd_min_mazz[0],  'r', label="Угол $λ$ = 88")
- #   gr_2.plot(dist_mazz[1], Fd_min_mazz[1],  'bo', label="Угол $λ$ = 90")
-#    gr_2.plot(dist_mazz[2], Fd_min_mazz[2],  'yo', label="Угол $λ$ = 92")
+    gr_1.plot(lat_mass[0], a_mass[0], 'r', label="Угол $λ$ = 88")
+    gr_1.plot(lat_mass[1], a_mass[1], 'b', label="Угол $λ$ = 90")
+    gr_1.plot(lat_mass[2], a_mass[2],  'y', label="Угол $λ$ = 92")
+    gr_2.plot(lat_mass[0], time_mass[0],  'g', label="Угол $λ$ = 88")
    # Подписываем оси, пишем заголовок
  #   gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
     gr_1.set_ylabel(' Частота (Гц)')

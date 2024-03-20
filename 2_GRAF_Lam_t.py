@@ -51,6 +51,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
     time_mass = []
     a_mass = []
     R_0_mass = []
+    lat_mass = []
+    lon_mass = []
+
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -62,7 +65,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         Vs = Vx_s, Vy_s, Vz_s
         # Считаем положение спутника в геодезической СК
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
-        #print (lat_s)
+        lon_mass.append(lon_s)
+        lat_mass.append(lat_s)
         if lat_s < 0.3 and lat_s > -0.3:
             print(dt)
 
@@ -72,7 +76,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+        R_0= 964.73
+ #       R_0 = 561.6
+        #R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
@@ -104,7 +110,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         dt += delta
 
  #   print (i)
-    return track_shape, time_mass, a_mass, R_0_mass
+    return track_shape, time_mass, a_mass, R_0_mass, lat_mass, lon_mass
    
 
 
@@ -113,7 +119,7 @@ def _test():
     #25544 37849
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
-    Fd = -1000
+    Fd = -5000
     filename = "2_GRAF/2_GRAF_a_t" + s_name + ".shp"
     print (filename)
 
@@ -168,25 +174,30 @@ def _test():
     time_mass = []
     a_mass = []
     R_0_mass = []
+    lat_mass = []
+    lon_mass = []
     
-    while  Fd <= 1000:
-        track_shape, time_m, Fd_m, R_0_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, Fd)
+    
+    while  Fd <= 5000:
+        track_shape, time_m, Fd_m, R_0_m, lat_m, lon_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, Fd)
         time_mass.append(time_m)
         a_mass.append(Fd_m)
         R_0_mass.append(R_0_m)
-        Fd += 1000
+        lon_mass.append(lon_m)
+        lat_mass.append(lat_m)
+        Fd += 5000
     # Создали объекты окна fig
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(time_mass[0], a_mass[0], 'r', label="Частота $F$ = - 1000 Гц")
-    gr_1.plot(time_mass[1], a_mass[1], 'b', label="Частота $F$ = 0 Гц")
-    gr_1.plot(time_mass[2], a_mass[2], 'y', label="Частота $F$ = 1000 Гц")
-    gr_2.plot(time_mass[0], R_0_mass[0], 'g')
+    gr_1.plot(lat_mass[0], a_mass[0], 'r', label="Частота $F$ = - 5000 Гц")
+    gr_1.plot(lat_mass[1], a_mass[1], 'b', label="Частота $F$ = 0 Гц")
+    gr_1.plot(lat_mass[2], a_mass[2], 'y', label="Частота $F$ = 5000 Гц")
+    gr_2.plot(lat_mass[0], time_mass[0], 'g')
     # Подписываем оси, пишем заголовок
 #    gr_1.set_title('Зависимость угла от доплеровского смещение частоты отраженного сигнала')
     gr_1.set_ylabel('λ (Градусы)')
-    gr_2.set_ylabel('R0 (м)')
-    gr_2.set_xlabel('Время (сек)')
+    gr_2.set_ylabel('Время (сек)')
+    gr_2.set_xlabel(' Широта Градусы')
     gr_1.legend()
     # Отображаем сетку
     gr_1.grid(True)
