@@ -1,22 +1,37 @@
 # Import `xlwt`
-import xlwt
+import xlrd
 
-# Initialize a workbook 
-book = xlwt.Workbook(encoding="utf-8")
+from datetime import date, datetime, timedelta
 
-# Add a sheet to the workbook
-sheet1 = book.add_sheet("Sheet1")
+filename1 = "t_max_semki"
 
-# The data
-cols = ["A", "B", "C", "D", "E"]
-txt = [0,1,2,3,4]
+# Open a workbook 
+workbook = xlrd.open_workbook(filename1 + ".xls")
+# Loads only current sheets to memory
+workbook = xlrd.open_workbook(filename1 + ".xls", on_demand = True)
+# Получаем количество листов в файле 
+len_list = len(workbook.sheet_names())
+for k in range(len_list):
+    # Получить объект листа по индексу
+    sheet1 = workbook.sheet_by_index(k)
+    # Загрузите определенный лист по названию
+    worksheet = workbook.sheet_by_name(sheet1.name)
 
-# Loop over the rows and columns and fill in the values
-for num in range(5):
-      row = sheet1.row(num)
-      for index, col in enumerate(cols):
-          value = txt[index] + num
-          row.write(index, value)
+    vitok = []
+    dt_start = []
+    dt_end = []
+    t_simki= []
 
-# Save the result
-book.save("space/test.xls")
+    for i in range(0, 27):
+        for j in range(0, 3):
+            if j == 0:
+                vitok.append(worksheet.cell_value(i, j))
+            elif j == 1:
+                date1 = datetime.strptime(worksheet.cell_value(i, j), '%Y-%m-%d %H:%M:%S')
+                dt_start.append(date1)
+            elif j == 2:
+                date2= datetime.strptime(worksheet.cell_value(i, j), '%Y-%m-%d %H:%M:%S')
+                dt_end.append(date2)
+            elif j == 3:
+                t_simki.append(worksheet.cell_value(i, j))
+print (dt_start)

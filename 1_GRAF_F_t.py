@@ -1,6 +1,7 @@
 import math
 from datetime import date, datetime, timedelta
 
+import xlwt
 # Не забываем импортировать matplotlib.pyplot
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,6 +52,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
     time_mass = []
     F_mass = []
     R_0_mass = []
+    lat_mass = []
+    lon_mass = []
 
     # Объявляем счётчики, i для идентификаторов, minutes для времени
     i = 0
@@ -63,14 +66,17 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         # Считаем положение спутника в геодезической СК
         lon_s, lat_s, alt_s = get_lat_lon_sgp(tle_1, tle_2, dt)
-
+        lon_mass.append(lon_s)
+        lat_mass.append(lat_s)
         #Персчитываем положение объекта из геодезической в инерциальную СК  на текущее время с расчетом компонентов скорости точки на земле
         pos_t, v_t = get_xyzv_from_latlon(dt, lon_t, lat_t, alt_t)
         X_t, Y_t, Z_t = pos_t
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+#        R_0=923
+        R_0 = 561.6
+#        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
@@ -102,12 +108,13 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         dt += delta
 
  #   print (i)
-    return track_shape, time_mass, F_mass, R_0_mass
+    return track_shape, time_mass, F_mass, R_0_mass, lat_mass, lon_mass
    
 
 
 def _test():
 
+    book = xlwt.Workbook(encoding="utf-8")
     #25544 37849
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
@@ -167,25 +174,47 @@ def _test():
     time_mass = []
     Fd_mass = []
     R_0_mass = []
+    lat_mass = []
+    lon_mass = []
     
     while  a <= 92:
-        track_shape, time_m, Fd_m, R_0_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
+        track_shape, time_m, Fd_m, R_0_m, lat_m, lon_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
         time_mass.append(time_m)
         Fd_mass.append(Fd_m)
         R_0_mass.append(R_0_m)
+        lon_mass.append(lon_m)
+        lat_mass.append(lat_m)
+        
         a += 2
+
+ 
+    for ii in range(len(Fd_mass)):
+        sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
+        for jj in range(568):
+            print (f"{ii} {jj}")
+ #          print(f"{time_mass[ii] [jj]} {Fd_mass[ii] [jj]} { R_0_mass[ii] [jj]} {lon_mass[ii] [jj]} {lat_mass[ii] [jj]}")
+            sheet1.write(jj, 0, time_mass[ii] [jj])
+            sheet1.write(jj, 1,Fd_mass[ii] [jj])
+            sheet1.write(jj, 2,R_0_mass[ii] [jj])
+            sheet1.write(jj, 3,lon_mass[ii] [jj])
+            sheet1.write(jj, 4,lat_mass[ii] [jj])
+#    print (f"{ii} {jj}")
+        # Save the result
+    book.save("1_GRAF/1_GRAF_F_t" + s_name + ".xls")
+  #  print (a)  
+
     # Создали объекты окна fig
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(time_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
-    gr_1.plot(time_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
-    gr_1.plot(time_mass[2], Fd_mass[2], 'y', label="Угол $λ$ = 92")
-    gr_2.plot(time_mass[0], R_0_mass[0], 'g', label="Угол $λ$ = 88")
-    # Подписываем оси, пишем заголовок
-#    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
-    gr_1.set_ylabel('Fd (Гц)')
-    gr_2.set_ylabel('R0 (м)')
-    gr_2.set_xlabel('Время (сек)')
+    gr_1.plot(lat_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
+    gr_1.plot(lat_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
+    gr_1.plot(lat_mass[2], Fd_mass[2],  'y', label="Угол $λ$ = 92")
+    gr_2.plot(lat_mass[0], time_mass[0],  'g', label="Угол $λ$ = 88")
+   # Подписываем оси, пишем заголовок
+ #   gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
+    gr_1.set_ylabel(' Частота (Гц)')
+    gr_2.set_ylabel('Время (сек)')
+    gr_2.set_xlabel(' Широта Градусы')
     gr_1.legend()
     # Отображаем сетку
     gr_1.grid(True)

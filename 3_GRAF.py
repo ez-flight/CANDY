@@ -203,8 +203,8 @@ def _test():
         row = sheet1.row(ii)
         vitok, date_n1, date_n2 , vremya_kontakta = t_semki[ii]
         row.write(0, vitok)
-        row.write(1, date_n1)
-        row.write(2, date_n2)
+        row.write(1, str(date_n1))
+        row.write(2, str(date_n2))
         print(vremya_kontakta.total_seconds())
         row.write(3, vremya_kontakta.total_seconds())
 #            row.write(jj, time_mass[jj])

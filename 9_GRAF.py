@@ -110,36 +110,38 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
 def _test():
 
-filename = "t_max_semki"
+    filename1 = "t_max_semki"
+    a = 90
+    # Open a workbook 
+    workbook = xlrd.open_workbook(filename1 + ".xls")
+    # Loads only current sheets to memory
+    workbook = xlrd.open_workbook(filename1 + ".xls", on_demand = True)
+    # Получаем количество листов в файле 
+    len_list = len(workbook.sheet_names())
+    for k in range(len_list):
+        # Получить объект листа по индексу
+        sheet1 = workbook.sheet_by_index(k)
+        # Загрузите определенный лист по названию
+        worksheet = workbook.sheet_by_name(sheet1.name)
 
-# Open a workbook 
-workbook = xlrd.open_workbook(filename + ".xls")
-# Loads only current sheets to memory
-workbook = xlrd.open_workbook(filename + ".xls", on_demand = True)
-# Получаем количество листов в файле 
-len_list = len(workbook.sheet_names())
-for k in range(len_list):
-    # Получить объект листа по индексу
-    sheet1 = workbook.sheet_by_index(k)
-    # Загрузите определенный лист по названию
-    worksheet = workbook.sheet_by_name(sheet1.name)
+        vitok = []
+        dt_start = []
+        dt_end = []
+        t_simki= []
 
-    vitok = []
-    dt_start = []
-    dt_end = []
-    t_simki= []
-
-    for i in range(0, 27):
-        for j in range(0, 3):
-            if j == 0:
-                vitok.append(worksheet.cell_value(i, j))
-            elif j == 1:
-                dt_start.append(worksheet.cell_value(i, j))
-            elif j == 2:
-                dt_end.append(worksheet.cell_value(i, j))
-            elif j == 3:
-                t_simki.append(worksheet.cell_value(i, j))
-
+        for i in range(0, 27):
+            for j in range(0, 3):
+                if j == 0:
+                    vitok.append(worksheet.cell_value(i, j))
+                elif j == 1:
+                    date1 = datetime.strptime(worksheet.cell_value(i, j), '%Y-%m-%d %H:%M:%S')
+                    dt_start.append(date1)
+                elif j == 2:
+                    date2= datetime.strptime(worksheet.cell_value(i, j), '%Y-%m-%d %H:%M:%S')
+                    dt_end.append(date2)
+                elif j == 3:
+                    t_simki.append(worksheet.cell_value(i, j))
+#    print (dt_start)
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
 
     filename = "9_GRAF/9_GRAF_F_t" + s_name + ".shp"
@@ -169,7 +171,7 @@ for k in range(len_list):
 
      
     #Задаем начальное время
-    dt_start = datetime(2024, 2, 25, 3, 58, 8)
+ #   dt_start = datetime(2024, 2, 25, 3, 58, 8)
     #Задаем конечное время
  #   dt_end = datetime(2024, 3, 6, 17, 3, 17)
     #Задаем шаг по времени для прогноза
@@ -184,44 +186,37 @@ for k in range(len_list):
     )
 
     #Задаем количество суток для прогноза
-    dt_end = dt_start + timedelta(
-        days=0,
-        seconds=199,
-#        seconds=0,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0
-    )
 
     time_mass = []
     Fd_mass = []
     R_0_mass = []
-    
-    while  a <= 92:
-        track_shape, time_m, Fd_m, R_0_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end, delta, track_shape, a)
+    bus = []
+    for kol in range(len(vitok)):
+        track_shape, time_m, Fd_m, R_0_m = create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start[kol], dt_end[kol], delta, track_shape, a)
         time_mass.append(time_m)
         Fd_mass.append(Fd_m)
         R_0_mass.append(R_0_m)
-        a += 2
+        bus.append(max(R_0_m))
+    print(min(bus))
+#    smallest_number = min(R_0_mass)
+#    print (len(R_0_mass))
     # Создали объекты окна fig
-    fig, (gr_1, gr_2) = plt.subplots(nrows=2)
+#    fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(time_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
-    gr_1.plot(time_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
-    gr_1.plot(time_mass[2], Fd_mass[2], 'y', label="Угол $λ$ = 92")
-    gr_2.plot(time_mass[0], R_0_mass[0], 'g', label="Угол $λ$ = 88")
+ #   gr_1.plot(time_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
+#    gr_1.plot(time_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
+#    gr_1.plot(time_mass[2], Fd_mass[2], 'y', label="Угол $λ$ = 92")
+#    gr_2.plot(time_mass[0], R_0_mass[0], 'g', label="Угол $λ$ = 88")
     # Подписываем оси, пишем заголовок
 #    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
-    gr_1.set_ylabel('Fd (Гц)')
-    gr_2.set_ylabel('R0 (м)')
-    gr_2.set_xlabel('Время (сек)')
-    gr_1.legend()
+#    gr_1.set_ylabel('Fd (Гц)')
+#    gr_2.set_ylabel('R0 (м)')
+#    gr_2.set_xlabel('Время (сек)')
+#    gr_1.legend()
     # Отображаем сетку
-    gr_1.grid(True)
-    gr_2.grid(True)
-    plt.show()
+#    gr_1.grid(True)
+#    gr_2.grid(True)
+#    plt.show()
 
     # Вне цикла нам осталось записать созданный шейп-файл на диск.
     # Т.к. мы знаем, что координаты положений ИСЗ были получены в WGS84
