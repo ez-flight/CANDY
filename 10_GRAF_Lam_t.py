@@ -1,11 +1,11 @@
 import math
 from datetime import date, datetime, timedelta
 
-import xlwt
 # Не забываем импортировать matplotlib.pyplot
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+import xlwt
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 
@@ -119,7 +119,7 @@ def _test():
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
     Fd = -1000
-    filename = "2_GRAF/2_GRAF_F_t" + s_name + ".shp"
+    filename = "10_GRAF/10_GRAF_F_t" + s_name + ".shp"
     print (filename)
 
     lat_t = 59.95  #55.75583
@@ -199,7 +199,7 @@ def _test():
             sheet1.write(jj, 4,lat_mass[ii] [jj])
 #    print (f"{ii} {jj}")
         # Save the result
-    book.save("2_GRAF/2_GRAF_a_t" + s_name + ".xls")
+    book.save("10_GRAF/10_GRAF_a_t" + s_name + ".xls")
   #  print (a)  
 
     # Создали объекты окна fig
