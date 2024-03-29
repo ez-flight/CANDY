@@ -74,7 +74,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-#        R_0=923
+#        R_0= 964.73
         R_0 = 561.6
 #        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
@@ -119,7 +119,7 @@ def _test():
     # 56756 Кондор ФКА
     s_name, tle_1, tle_2 = read_tle_base_file(56756)
     Fd = -1000
-    filename = "2_GRAF/2_GRAF_F_t" + s_name + ".shp"
+    filename = "10_GRAF/10_GRAF_F_t" + s_name + ".shp"
     print (filename)
 
     lat_t = 59.95  #55.75583
@@ -199,7 +199,7 @@ def _test():
             sheet1.write(jj, 4,lat_mass[ii] [jj])
 #    print (f"{ii} {jj}")
         # Save the result
-    book.save("2_GRAF/2_GRAF_a_t" + s_name + ".xls")
+    book.save("10_GRAF/10_GRAF_a_t" + s_name + ".xls")
   #  print (a)  
 
     # Создали объекты окна fig

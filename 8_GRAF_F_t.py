@@ -205,7 +205,7 @@ def _test():
 #    print(Fd_min_mazz[1])
 #    print(Fd_min_mazz[2])
  
-    for ii in range(len(Fd_mass)):
+    for ii in range(len(Fd_min_mazz[0])):
         sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
         for jj in range(568):
             print (f"{ii} {jj}")
