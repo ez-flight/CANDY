@@ -1,11 +1,11 @@
 import math
 from datetime import date, datetime, timedelta
 
-import xlwt
 # Не забываем импортировать matplotlib.pyplot
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+import xlwt
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 

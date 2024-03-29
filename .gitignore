@@ -151,7 +151,7 @@ media/
 
 # Others
 node_modules
-
+.xls#
 active.txt
 
 # Мои рабочие папки

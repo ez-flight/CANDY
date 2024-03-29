@@ -207,19 +207,6 @@ def _test():
         row.write(2, str(date_n2))
         print(vremya_kontakta.total_seconds())
         row.write(3, vremya_kontakta.total_seconds())
-#            row.write(jj, time_mass[jj])
-
-#    print(f"количество секунд {kol} {data.total_seconds()}\n")
-#    for num in range(len(Fd_m)):
-#        row = sheet1.row(num)
-#        row.write(0, time_mass[num])
-#        row.write(1, lon_s_m[num])
-#        row.write(2, lat_s_m[num])
-#        row.write(3, Fd_m[num])
- #       row.write(4, chislo_m[num])
- #       for index, col in enumerate(cols):
- #           value = Fd_m_1[index]
- #           row.write(index, value)
 
     # Save the result
     book.save(filename1 + ".xls")
