@@ -75,8 +75,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
 #        R_0=923
-        R_0 = 561.6
-#        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+        #R_0 = 561.6
+        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 

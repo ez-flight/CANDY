@@ -101,25 +101,22 @@ def _test():
  #   pos_t_2 = 61.796111, 34.349167, 112
     
     i = 0
-    j = 0
  #   Lam_f = 88
-    Fd_2 = 0
     mas =  []
     mas_2 = []
     while dt_start < dt_end:
  #       print(dt_start)
-        for Lam_f in range(88 ,93):
+        for Lam_f in range(88,93):
  #           print(Lam_f)
             mas.append(create_orbital_track_for_f_doplera(tle_1, tle_2, dt_start, pos_t, Lam_f))
-            Fd_2[Lam_f][j] = mas[0][9]
-            Lam_f += 1
-        if  mas[0][9] > abs(Fd_2[Lam_f][j-1]):
+ #           if Fd_1 > abs(Fd_2):
  #               Fd = Fd_2
  #               Lam_f_0 = Lam_f_2
  #           else:
  #               Fd = Fd_1
  #               Lam_f_0 = Lam_f_1
-        mas.sort(key=lambda x:x[9], reverse=True)
+            Lam_f += 1
+        mas.sort(key=lambda x:x[9])
         mas_2.append(mas[0])
         track_shape.point(mas[0][1], mas[0][2])
         track_shape.record(i, mas[0][0], mas[0][1], mas[0][2], mas[0][3], mas[0][4], mas[0][5], mas[0][6], mas[0][7], mas[1][8], mas[0][9])
@@ -128,7 +125,6 @@ def _test():
  #       mas_3.append(mas_2[0])
  #       mas = []
         i += 1
-        j += 1
   #      print (i)
         dt_start += delta
     #sorted(maskey=lambda x: x[1])
