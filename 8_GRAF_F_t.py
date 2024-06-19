@@ -189,27 +189,6 @@ def _test():
         Fd_max_mass.append(Fd_max_m)
         print(a)
         a += 2
-<<<<<<< HEAD
-        oo += 1
-    print(Fd_min_mazz)
-#    print(Fd_min_mazz[1])
-#    print(Fd_min_mazz[2])
- 
-    for ii in range(len(Fd_min_mazz[0])):
-        sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
-        for jj in range(568):
-            print (f"{ii} {jj}")
-            print(f"{time_mass[ii] [jj]} {Fd_mass[ii] [jj]} { R_0_mass[ii] [jj]} {lon_mass[ii] [jj]} {lat_mass[ii] [jj]}")
-            sheet1.write(jj, 0, time_mass[ii] [jj])
-            sheet1.write(jj, 1,Fd_mass[ii] [jj])
-            sheet1.write(jj, 2,R_0_mass[ii] [jj])
-            sheet1.write(jj, 3,lon_mass[ii] [jj])
-            sheet1.write(jj, 4,lat_mass[ii] [jj])
-#    print (f"{ii} {jj}")
-        # Save the result
-    book.save("8_GRAF/8_GRAF_F_R_0" + s_name + ".xls")
-  #  print (a)  
-=======
 
     for ii in range(len(Fd_min_mass)):
         sheet1 = book.add_sheet(str(ii))
@@ -221,22 +200,21 @@ def _test():
 
     # Save the result
     book.save("8_GRAF/8_GRAF_F_R_0" + s_name + ".xls") 
->>>>>>> 919e59d8c8292fab5cf86b4755c1b118e987b703
 
     # Создали объекты окна fig
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(dist_mass[0], Fd_max_mass[0], 'r', label="Угол $λ$ = 88")
-    gr_1.plot(dist_mass[1], Fd_max_mass[1], 'b', label="Угол $λ$ = 90")
-    gr_1.plot(dist_mass[2], Fd_max_mass[2],  'y', label="Угол $λ$ = 92")
-    gr_2.plot(dist_mass[0], Fd_min_mass[0],  'r', label="Угол $λ$ = 88")
-    gr_2.plot(dist_mass[1], Fd_min_mass[1],  'b', label="Угол $λ$ = 90")
-    gr_2.plot(dist_mass[2], Fd_min_mass[2],  'y', label="Угол $λ$ = 92")
+    gr_1.plot(dist_mass[0], Fd_max_mass[0], 'r', linestyle='--', label="Угол $α$ = -2")
+    gr_1.plot(dist_mass[1], Fd_max_mass[1], 'g', label="Угол $α$ = 0")
+    gr_1.plot(dist_mass[2], Fd_max_mass[2], 'b', linestyle='dotted', label="Угол $α$ = +2")
+    gr_2.plot(dist_mass[0], Fd_min_mass[0], 'r', linestyle='--', label="Угол $α$ = -2")
+    gr_2.plot(dist_mass[1], Fd_min_mass[1], 'g', label="Угол $α$ = 0")
+    gr_2.plot(dist_mass[2], Fd_min_mass[2], 'b', linestyle='dotted', label="Угол $α$ = +2")
    # Подписываем оси, пишем заголовок
-    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости от наклонной дальности')
-    gr_1.set_ylabel('Частота (КГц)')
-    gr_2.set_ylabel('Частота (КГц)')
-    gr_2.set_xlabel('Наклонная дальность (км)')
+#    gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости от наклонной дальности')
+    gr_1.set_ylabel('Fd, КГц')
+    gr_2.set_ylabel('Fd, КГц')
+    gr_2.set_xlabel('Наклонная дальность, км')
     gr_1.legend()
     # Отображаем сетку
     gr_1.grid(True)

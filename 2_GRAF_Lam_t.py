@@ -76,7 +76,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-        R_0= 964.73
+        R_0 = 750
  #       R_0 = 561.6
         #R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
@@ -186,18 +186,20 @@ def _test():
         lon_mass.append(lon_m)
         lat_mass.append(lat_m)
         Fd += 5000
+
+        
     # Создали объекты окна fig
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(lat_mass[0], a_mass[0], 'r', label="Частота $F$ = - 5000 Гц")
-    gr_1.plot(lat_mass[1], a_mass[1], 'b', label="Частота $F$ = 0 Гц")
-    gr_1.plot(lat_mass[2], a_mass[2], 'y', label="Частота $F$ = 5000 Гц")
-    gr_2.plot(lat_mass[0], time_mass[0], 'g')
-    # Подписываем оси, пишем заголовок
-#    gr_1.set_title('Зависимость угла от доплеровского смещение частоты отраженного сигнала')
-    gr_1.set_ylabel('λ (Градусы)')
-    gr_2.set_ylabel('Время (сек)')
-    gr_2.set_xlabel(' Широта Градусы')
+    gr_1.plot(lat_mass[0], a_mass[0], 'r', linestyle='--', label="Частота $Fd$ = -15 КГц")
+    gr_1.plot(lat_mass[1], a_mass[1], 'g', label="Частота $Fd$ = 0 КГц")
+    gr_1.plot(lat_mass[2], a_mass[2],  'b', linestyle='dotted', label="Частота $Fd$ = +15 КГц")
+    gr_2.plot(lat_mass[0], time_mass[0],  'y')
+   # Подписываем оси, пишем заголовок
+ #   gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
+    gr_1.set_ylabel('α, град')
+    gr_2.set_ylabel('Время, сек')
+    gr_2.set_xlabel(' Широта, град')
     gr_1.legend()
     # Отображаем сетку
     gr_1.grid(True)

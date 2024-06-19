@@ -1,11 +1,11 @@
 import math
 from datetime import date, datetime, timedelta
 
-import xlwt
 # Не забываем импортировать matplotlib.pyplot
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+import xlwt
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 
@@ -42,7 +42,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
     # Радиус земли
     Re = 6378.140
     # Длина волны
-    Lam=0.000096
+    Lam=0.0001
     # Координаты объекта в геодезической СК
     lat_t, lon_t, alt_t = pos_t
 
@@ -74,9 +74,9 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         #Расчет ----
         R_s = math.sqrt((X_s**2)+(Y_s**2)+(Z_s**2))
-#        R_0=923
-        #R_0 = 561.6
-        R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
+        R_0 = 750
+#        R_0 = 561.6
+ #       R_0 = math.sqrt(((X_s-X_t)**2)+((Y_s-Y_t)**2)+((Z_s-Z_t)**2))
         R_e = math.sqrt((X_t**2)+(Y_t**2)+(Z_t**2))
         V_s = math.sqrt((Vx_s**2)+(Vy_s**2)+(Vz_s**2))
 
@@ -84,6 +84,7 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
         #Верхний (Угол Визирования)
         y = math.acos(((R_0**2)+(R_s**2)-(R_e**2))/(2*R_0*R_s))
         y_grad = y * (180/math.pi)
+        print (y_grad)
         #Нижний (Угол места)
         ay = math.acos(((R_0*math.sin(y))/R_e))
         ay_grad = math.degrees(ay)
@@ -93,8 +94,8 @@ def create_orbital_track_shapefile_for_day(tle_1, tle_2, pos_t, dt_start, dt_end
 
         R_0_mass.append(R_0)
 
-        # Расчет угла a ведется в файле calc_F_L.py резкльтат в градусах
-        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)
+        # Расчет частоты в КГц ведется в файле calc_F_L.py 
+        Fd = calc_f_doplera(a, Lam, ay, Rs, Vs, R_0, R_s, R_e, V_s)/1000
         F_mass.append(Fd)
 
         # Создаём в шейп-файле новый объект
@@ -191,7 +192,7 @@ def _test():
     for ii in range(len(Fd_mass)):
         sheet1 = book.add_sheet(str(ii), cell_overwrite_ok=True)
         for jj in range(568):
-            print (f"{ii} {jj}")
+#            print (f"{ii} {jj}")
             sheet1.write(jj, 0, time_mass[ii] [jj])
             sheet1.write(jj, 1,Fd_mass[ii] [jj])
             sheet1.write(jj, 2,R_0_mass[ii] [jj])
@@ -203,17 +204,18 @@ def _test():
   #  print (a)  
 
     # Создали объекты окна fig
+ #   fig, gr_1 = plt.subplots()
     fig, (gr_1, gr_2) = plt.subplots(nrows=2)
     # Задали расположение графиков в 2 строки
-    gr_1.plot(lat_mass[0], Fd_mass[0], 'r', label="Угол $λ$ = 88")
-    gr_1.plot(lat_mass[1], Fd_mass[1], 'b', label="Угол $λ$ = 90")
-    gr_1.plot(lat_mass[2], Fd_mass[2],  'y', label="Угол $λ$ = 92")
-    gr_2.plot(lat_mass[0], time_mass[0],  'g', label="Угол $λ$ = 88")
+    gr_1.plot(lat_mass[0], Fd_mass[0], 'r', linestyle='--', label="Угол $α$ = -2")
+    gr_1.plot(lat_mass[1], Fd_mass[1], 'g', label="Угол $α$ = 0")
+    gr_1.plot(lat_mass[2], Fd_mass[2],  'b', linestyle='dotted', label="Угол $α$ = +2")
+#    gr_2.plot(lat_mass[0], time_mass[0],  'y', label="Угол $a$ = 88")
    # Подписываем оси, пишем заголовок
  #   gr_1.set_title('Доплеровское смещение частоты отраженного сигнала в зависимости времени')
-    gr_1.set_ylabel(' Частота (Гц)')
-    gr_2.set_ylabel('Время (сек)')
-    gr_2.set_xlabel(' Широта Градусы')
+    gr_1.set_ylabel(' Частота, КГц')
+    gr_2.set_ylabel('Время, сек')
+    gr_1.set_xlabel(' Широта, град')
     gr_1.legend()
     # Отображаем сетку
     gr_1.grid(True)
