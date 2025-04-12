@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 import numpy as np
 import shapefile
+from pyorbital import tlefile
 # Ключевой класс библиотеки pyorbital
 from pyorbital.orbital import Orbital
 
@@ -118,7 +119,9 @@ def _test():
 
     #25544 37849
     # 56756 Кондор ФКА
-    s_name, tle_1, tle_2 = read_tle_base_file(56756)
+    # Пример использования
+    norad_id = 56756  # Пример для спутника "Кондор"
+    s_name, tle_1, tle_2 = read_tle_base_file(norad_id)
     Fd = -5000
     filename = "2_GRAF/2_GRAF_a_t" + s_name + ".shp"
     print (filename)
