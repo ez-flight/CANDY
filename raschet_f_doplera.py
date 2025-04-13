@@ -11,7 +11,7 @@ from pyorbital.orbital import Orbital
 
 from calc_cord import get_xyzv_from_latlon
 from calc_F_L import calc_f_doplera, calc_lamda
-from read_TBF import read_tle_base_file, read_tle_base_internet
+from read_TBF import read_tle_base_file
 
 #from sgp4.earth_gravity import wgs84
 
@@ -188,7 +188,7 @@ def _test():
 
     #Задаем количество суток для прогноза
     dt_end = dt_start + timedelta(
-        days=16,
+        days=2,
 #        seconds=5689,
         seconds=0,
         microseconds=0,
@@ -230,7 +230,7 @@ def _test():
 
         # Save the result
 
-        a += 0.1
+        a += 1
     book.save(filename + ".xls")
     plt.title('Доплеровское смещение частоты отраженного сигнала в зависимости от угла скоса и угловой скорости подспутниковой точки')
     plt.xlabel('скорость подспутниковой точки')
